@@ -1,6 +1,6 @@
 ---
 title: 【译】曾经的 Go 程序员又回来了
-date: 2017-03-04 23:47:44
+date: 2018-03-04 23:47:44
 categories: "翻译文章"
 tags:
      - Golang

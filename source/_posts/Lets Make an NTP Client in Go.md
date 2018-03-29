@@ -1,6 +1,6 @@
 ---
 title: 【译】一个 NTP 客户端的 Go 实现
-date: 2017-02-01 23:47:44
+date: 2018-02-01 23:47:44
 categories: "翻译文章"
 tags:
      - Golang

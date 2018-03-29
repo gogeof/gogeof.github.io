@@ -1,6 +1,6 @@
 ---
 title: 【译】Go test 少为人知的特性
-date: 2017-03-11 23:47:44
+date: 2018-03-11 23:47:44
 categories: "翻译文章"
 tags:
      - Golang

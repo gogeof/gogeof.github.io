@@ -1,10 +1,11 @@
 ---
 title: 【译】Go 语言机制之内存分析
-date: 2017-02-23 23:47:44
+date: 2018-02-23 23:47:44
 categories: "翻译文章"
 tags: 
      - Golang
      - Translate
+     - William Kennedy
 ---
 
 ## 前序（Prelude）

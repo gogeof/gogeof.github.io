@@ -1,10 +1,11 @@
 ---
 title: 【译】Go 语言机制之逃逸分析
-date: 2017-02-12 23:47:44
+date: 2018-02-12 23:47:44
 categories: "翻译文章"
 tags:
      - Golang
      - Translate
+     - William Kennedy
 ---
 
 ## 前序（Prelude）

@@ -1,10 +1,11 @@
 ---
 title: 【译】Go 语言机制之数据和语法的设计哲学
-date: 2017-03-01 23:47:44
+date: 2018-03-01 23:47:44
 categories: "翻译文章"
 tags:
      - Golang
      - Translate
+     - William Kennedy
 ---
 
 ## 前序（Prelude）

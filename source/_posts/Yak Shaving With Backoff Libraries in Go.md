@@ -1,6 +1,6 @@
 ---
 title: 【译】在 Go 代码中使用退避方法
-date: 2017-03-06 23:47:44
+date: 2018-03-06 23:47:44
 categories: "翻译文章"
 tags:
      - Golang
