@@ -1,84 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>【译】Go 功能：将 Go 程序员带向极限</title>
-    <url>/2018/06/29/%E3%80%90%E8%AF%91%E3%80%91Go-%E5%8A%9F%E8%83%BD%EF%BC%9A%E5%B0%86-Go-%E7%A8%8B%E5%BA%8F%E5%91%98%E5%B8%A6%E5%90%91%E6%9E%81%E9%99%90/</url>
-    <content><![CDATA[<h2 id="功能范式（The-Functional-Paradigm）"><a href="#功能范式（The-Functional-Paradigm）" class="headerlink" title="功能范式（The Functional Paradigm）"></a>功能范式（The Functional Paradigm）</h2><p>函数式编程基于简单的规则，目的是使程序保持一致，使并行（更）人性化和简单化，函数是存粹的，它不会改变（变量的）状态，不会改变对象，也不共享状态，代码是声明式的，计算只不过是数学函数的一种实现。</p>
-<a id="more"></a>
-
-<p>我们来看一个纯粹的函数语言的函数例子：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">isPalindrome :: (Eq a) &#x3D;&gt; [a] -&gt; Bool</span><br><span class="line">isPalindrome x &#x3D; x &#x3D;&#x3D; reverse x</span><br></pre></td></tr></table></figure>
-
-<p>上面的代码是 haskell 版本的 palindrome 函数，我们（实际上）都在某种程度上通过循环来遍历列表，以及检查…，在 Haskell 中，isPalindrome 函数获取 Equality 的字符列表（考虑比较时），并返回一个 bool 值（True 或者 False）。实现（这个功能）只需一行代码：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">x &#x3D;&#x3D; reverse x</span><br></pre></td></tr></table></figure>
-
-<p>将参数和 reverse 输出进行比较，reverse 是一个反转列表的函数。</p>
-<p>我们来看如何在 Golang 中实现一个相似的函数，从一个递归版本的 reverse 开始吧：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reverse</span><span class="params">(str <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> str == <span class="string">""</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> str</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> reverse(str[<span class="number">1</span>:]) + <span class="keyword">string</span>(str[<span class="number">0</span>]) <span class="comment">// a string is a byte array in golang</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>现在我们有了一个名为 reverse 的函数，让我们再看一下如何实现 isPalindrome ，用类似于函数的方式。</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">isPalindrome</span> <span class="params">(str <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> str == reverse(str)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>就像你看到的，我们最终用几行代码就写了一个大家一看就懂的函数，在大多数情况下，非常有名的函数都可以实现 go 语言的版本，函数在 golang 中是第一公民，所以我们可以做一些类似下面的实现：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">isPalindrome := <span class="function"><span class="keyword">func</span> <span class="params">(str <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> str == reverse(str)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">isPalindrome(<span class="string">"radar"</span>)</span><br></pre></td></tr></table></figure>
-
-<p>这只是 golang 功能中很小的一部分，还有很多 go 语言实现中有大量优化的地方的例子，例如 go 中的 map，reduce，和 filter，一个好的实践方法是优化它们，并使用它们。</p>
-<p>例如，数据处理在 golang 中的速度要比 python 快得多，所以，（虽然）我（都）可以创建一个数据管道来清理和组织我的数据，但如果我愿意用 golang 实现的话，将更快。</p>
-<p>假设我有一个数值列表，我想要用一种优雅的方式，通过一组函数来处理这个列表中的数值：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> p <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">int</span>)</span> <span class="title">int</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">apInt</span><span class="params">(functions []p, numbers []<span class="keyword">int</span>)</span> []<span class="title">int</span></span>&#123;</span><br><span class="line">	j := <span class="number">0</span></span><br><span class="line">    output := <span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">0</span>)</span><br><span class="line">	<span class="keyword">for</span> _,f := <span class="keyword">range</span> functions &#123;</span><br><span class="line">		<span class="keyword">for</span> j &lt; <span class="built_in">len</span>(numbers) &#123;</span><br><span class="line">			fmt.Println(f(numbers[j]))</span><br><span class="line">			output = <span class="built_in">append</span>(output,f(numbers[j]))</span><br><span class="line">            j++</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="keyword">return</span> output</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>上面的 functions，是一个类似于如下声明的函数数组：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">listOfFuncs := []p&#123;a, b&#125;</span><br></pre></td></tr></table></figure>
-
-<p>它能够在所有的整型切片中工作，并且没有副作用。</p>
-<p>我刚为 <a href="https://github.com/radicalrafi/lori" target="_blank" rel="noopener">lori</a> 工作，它是一个 Golang 库，目标是为开发者提供这些有用的东西，并使 function 变得有趣和可能。</p>
-<hr>
-<p>via: <a href="https://radicalrafi.github.io/posts/functional-go/" target="_blank" rel="noopener">https://radicalrafi.github.io/posts/functional-go/</a></p>
-<p>作者：<a href="https://github.com/radicalrafi" target="_blank" rel="noopener">radicalrafi </a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
-<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
-]]></content>
-      <tags>
-        <tag>翻译文章</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【译】Go 语言中提取字段和方法</title>
-    <url>/2018/04/12/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E4%B8%AD%E6%8F%90%E5%8F%96%E5%AD%97%E6%AE%B5%E5%92%8C%E6%96%B9%E6%B3%95/</url>
-    <content><![CDATA[<p>struct 是一系列，包含名称和类型的字段。通常就像这样：</p>
-<a id="more"></a>
-
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    name <span class="keyword">string</span></span><br><span class="line">    age <span class="keyword">int32</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    person := Person&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;</span><br><span class="line">    fmt.Println(person)  <span class="comment">// &#123;Michał 29&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>（在这篇博文的接下来部分，我将逐步删除包名、导入和主函数的定义）</p>
-<p>上面的结构体中，每个字段都有明确的名字。Go 语言也允许不指定字段名称。没有名称的字段称为匿名字段或者内嵌字段。类型的名字（如果有包名，不包含这个前缀的包名）就作为字段的名字。因为结构体中要求至少有一个唯一的字段名，所以我们不能这样做：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">type</span> Request <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    http.Request <span class="comment">// field name is "Request"</span></span><br><span class="line">    Request <span class="comment">// field name is "Request"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果编译，编译器将抛出错误：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; go install github.com&#x2F;mlowicki&#x2F;sandbox</span><br><span class="line"># github.com&#x2F;mlowicki&#x2F;sandbox</span><br><span class="line">src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:34: duplicate field Request</span><br></pre></td></tr></table></figure>
-
-<p>带有匿名的字段或者方法，可以用一个简洁的方式访问到：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">type Person struct &#123;</span><br><span class="line">    name string</span><br><span class="line">    age int32</span><br><span class="line">&#125;</span><br><span class="line">func (p Person) IsAdult() bool &#123;</span><br><span class="line">    return p.age &gt;&#x3D; 18</span><br><span class="line">&#125;</span><br><span class="line">type Employee struct &#123;</span><br><span class="line">    position string</span><br><span class="line">&#125;</span><br><span class="line">func (e Employee) IsManager() bool &#123;</span><br><span class="line">    return e.position &#x3D;&#x3D; &quot;manager&quot;</span><br><span class="line">&#125;</span><br><span class="line">type Record struct &#123;</span><br><span class="line">    Person</span><br><span class="line">    Employee</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">record :&#x3D; Record&#123;&#125;</span><br><span class="line">record.name &#x3D; &quot;Michał&quot;</span><br><span class="line">record.age &#x3D; 29</span><br><span class="line">record.position &#x3D; &quot;software engineer&quot;</span><br><span class="line">fmt.Println(record) &#x2F;&#x2F; &#123;&#123;Michał 29&#125; &#123;software engineer&#125;&#125;</span><br><span class="line">fmt.Println(record.name) &#x2F;&#x2F; Michał</span><br><span class="line">fmt.Println(record.age) &#x2F;&#x2F; 29</span><br><span class="line">fmt.Println(record.position) &#x2F;&#x2F; software engineer</span><br><span class="line">fmt.Println(record.IsAdult()) &#x2F;&#x2F; true</span><br><span class="line">fmt.Println(record.IsManager()) &#x2F;&#x2F; false</span><br></pre></td></tr></table></figure>
-
-<p>匿名（嵌入）的字段和方法被调用时会自动向上提升（来找到对应的对象）。<br>他们的行为跟常规字段类似，但却不能用于结构体字面值：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">//record := Record&#123;&#125;</span></span><br><span class="line">record := Record&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;</span><br></pre></td></tr></table></figure>
-
-<p>它将导致编译器抛出错误：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F; src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:23: unknown Record field ‘name’ in struct literal</span><br><span class="line">&#x2F;&#x2F; src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:23: unknown Record field ‘age’ in struct literal</span><br></pre></td></tr></table></figure>
-
-<p>可以通过创建一个明确的，完整的，嵌入的结构体来达到我们的目的：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">Record&#123;Person&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;, Employee&#123;position: <span class="string">"Software Engineer"</span>&#125;&#125;</span><br></pre></td></tr></table></figure>
-
-<p><a href="https://golang.org/ref/spec#Struct_types" target="_blank" rel="noopener">来源：</a><br><img src="https://github.com/gogeof/gctt-images/blob/master/gogeof/Promoted%20fields%20and%20methods%20in%20Go/promoted-fields-and-methods-in-go-1.jpg?raw=true" alt=""></p>
-<hr>
-<p>via: <a href="https://medium.com/golangspec/promoted-fields-and-methods-in-go-4e8d7aefb3e3" target="_blank" rel="noopener">https://medium.com/golangspec/promoted-fields-and-methods-in-go-4e8d7aefb3e3</a></p>
-<p>作者：<a href="https://medium.com/@mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
-<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
-]]></content>
-      <tags>
-        <tag>翻译文章</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【译】Go GC</title>
     <url>/2018/11/05/%E3%80%90%E8%AF%91%E3%80%91Go-GC/</url>
     <content><![CDATA[<p>大家好，我是 Okada（<a href="https://twitter.com/ocadaruma" target="_blank" rel="noopener">@ocadaruma</a>）,LINE 广告平台团队的成员。我对 Go 的 GC （垃圾收集器）有点感兴趣，甚至还促使我专门写一篇关于它的博客。Go 是一门由 Google 开发，并且支持垃圾收集的编程语言。Go 通过<a href="https://tour.golang.org/concurrency/2" target="_blank" rel="noopener">管道</a>支持并发。很多的公司，包括 Google，都在使用 Go，LINE 也用 Go 来开发工具和服务。</p>
@@ -166,6 +88,84 @@
       </tags>
   </entry>
   <entry>
+    <title>【译】Go 功能：将 Go 程序员带向极限</title>
+    <url>/2018/06/29/%E3%80%90%E8%AF%91%E3%80%91Go-%E5%8A%9F%E8%83%BD%EF%BC%9A%E5%B0%86-Go-%E7%A8%8B%E5%BA%8F%E5%91%98%E5%B8%A6%E5%90%91%E6%9E%81%E9%99%90/</url>
+    <content><![CDATA[<h2 id="功能范式（The-Functional-Paradigm）"><a href="#功能范式（The-Functional-Paradigm）" class="headerlink" title="功能范式（The Functional Paradigm）"></a>功能范式（The Functional Paradigm）</h2><p>函数式编程基于简单的规则，目的是使程序保持一致，使并行（更）人性化和简单化，函数是存粹的，它不会改变（变量的）状态，不会改变对象，也不共享状态，代码是声明式的，计算只不过是数学函数的一种实现。</p>
+<a id="more"></a>
+
+<p>我们来看一个纯粹的函数语言的函数例子：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">isPalindrome :: (Eq a) &#x3D;&gt; [a] -&gt; Bool</span><br><span class="line">isPalindrome x &#x3D; x &#x3D;&#x3D; reverse x</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码是 haskell 版本的 palindrome 函数，我们（实际上）都在某种程度上通过循环来遍历列表，以及检查…，在 Haskell 中，isPalindrome 函数获取 Equality 的字符列表（考虑比较时），并返回一个 bool 值（True 或者 False）。实现（这个功能）只需一行代码：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">x &#x3D;&#x3D; reverse x</span><br></pre></td></tr></table></figure>
+
+<p>将参数和 reverse 输出进行比较，reverse 是一个反转列表的函数。</p>
+<p>我们来看如何在 Golang 中实现一个相似的函数，从一个递归版本的 reverse 开始吧：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reverse</span><span class="params">(str <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> str == <span class="string">""</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> str</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> reverse(str[<span class="number">1</span>:]) + <span class="keyword">string</span>(str[<span class="number">0</span>]) <span class="comment">// a string is a byte array in golang</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在我们有了一个名为 reverse 的函数，让我们再看一下如何实现 isPalindrome ，用类似于函数的方式。</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">isPalindrome</span> <span class="params">(str <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> str == reverse(str)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>就像你看到的，我们最终用几行代码就写了一个大家一看就懂的函数，在大多数情况下，非常有名的函数都可以实现 go 语言的版本，函数在 golang 中是第一公民，所以我们可以做一些类似下面的实现：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">isPalindrome := <span class="function"><span class="keyword">func</span> <span class="params">(str <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> str == reverse(str)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">isPalindrome(<span class="string">"radar"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这只是 golang 功能中很小的一部分，还有很多 go 语言实现中有大量优化的地方的例子，例如 go 中的 map，reduce，和 filter，一个好的实践方法是优化它们，并使用它们。</p>
+<p>例如，数据处理在 golang 中的速度要比 python 快得多，所以，（虽然）我（都）可以创建一个数据管道来清理和组织我的数据，但如果我愿意用 golang 实现的话，将更快。</p>
+<p>假设我有一个数值列表，我想要用一种优雅的方式，通过一组函数来处理这个列表中的数值：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> p <span class="function"><span class="keyword">func</span><span class="params">(<span class="keyword">int</span>)</span> <span class="title">int</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">apInt</span><span class="params">(functions []p, numbers []<span class="keyword">int</span>)</span> []<span class="title">int</span></span>&#123;</span><br><span class="line">	j := <span class="number">0</span></span><br><span class="line">    output := <span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">0</span>)</span><br><span class="line">	<span class="keyword">for</span> _,f := <span class="keyword">range</span> functions &#123;</span><br><span class="line">		<span class="keyword">for</span> j &lt; <span class="built_in">len</span>(numbers) &#123;</span><br><span class="line">			fmt.Println(f(numbers[j]))</span><br><span class="line">			output = <span class="built_in">append</span>(output,f(numbers[j]))</span><br><span class="line">            j++</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="keyword">return</span> output</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的 functions，是一个类似于如下声明的函数数组：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">listOfFuncs := []p&#123;a, b&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它能够在所有的整型切片中工作，并且没有副作用。</p>
+<p>我刚为 <a href="https://github.com/radicalrafi/lori" target="_blank" rel="noopener">lori</a> 工作，它是一个 Golang 库，目标是为开发者提供这些有用的东西，并使 function 变得有趣和可能。</p>
+<hr>
+<p>via: <a href="https://radicalrafi.github.io/posts/functional-go/" target="_blank" rel="noopener">https://radicalrafi.github.io/posts/functional-go/</a></p>
+<p>作者：<a href="https://github.com/radicalrafi" target="_blank" rel="noopener">radicalrafi </a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+]]></content>
+      <tags>
+        <tag>翻译文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【译】Go 语言中提取字段和方法</title>
+    <url>/2018/04/12/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E4%B8%AD%E6%8F%90%E5%8F%96%E5%AD%97%E6%AE%B5%E5%92%8C%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<p>struct 是一系列，包含名称和类型的字段。通常就像这样：</p>
+<a id="more"></a>
+
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">    name <span class="keyword">string</span></span><br><span class="line">    age <span class="keyword">int32</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    person := Person&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;</span><br><span class="line">    fmt.Println(person)  <span class="comment">// &#123;Michał 29&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>（在这篇博文的接下来部分，我将逐步删除包名、导入和主函数的定义）</p>
+<p>上面的结构体中，每个字段都有明确的名字。Go 语言也允许不指定字段名称。没有名称的字段称为匿名字段或者内嵌字段。类型的名字（如果有包名，不包含这个前缀的包名）就作为字段的名字。因为结构体中要求至少有一个唯一的字段名，所以我们不能这样做：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">type</span> Request <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    http.Request <span class="comment">// field name is "Request"</span></span><br><span class="line">    Request <span class="comment">// field name is "Request"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果编译，编译器将抛出错误：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&gt; go install github.com&#x2F;mlowicki&#x2F;sandbox</span><br><span class="line"># github.com&#x2F;mlowicki&#x2F;sandbox</span><br><span class="line">src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:34: duplicate field Request</span><br></pre></td></tr></table></figure>
+
+<p>带有匿名的字段或者方法，可以用一个简洁的方式访问到：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">type Person struct &#123;</span><br><span class="line">    name string</span><br><span class="line">    age int32</span><br><span class="line">&#125;</span><br><span class="line">func (p Person) IsAdult() bool &#123;</span><br><span class="line">    return p.age &gt;&#x3D; 18</span><br><span class="line">&#125;</span><br><span class="line">type Employee struct &#123;</span><br><span class="line">    position string</span><br><span class="line">&#125;</span><br><span class="line">func (e Employee) IsManager() bool &#123;</span><br><span class="line">    return e.position &#x3D;&#x3D; &quot;manager&quot;</span><br><span class="line">&#125;</span><br><span class="line">type Record struct &#123;</span><br><span class="line">    Person</span><br><span class="line">    Employee</span><br><span class="line">&#125;</span><br><span class="line">...</span><br><span class="line">record :&#x3D; Record&#123;&#125;</span><br><span class="line">record.name &#x3D; &quot;Michał&quot;</span><br><span class="line">record.age &#x3D; 29</span><br><span class="line">record.position &#x3D; &quot;software engineer&quot;</span><br><span class="line">fmt.Println(record) &#x2F;&#x2F; &#123;&#123;Michał 29&#125; &#123;software engineer&#125;&#125;</span><br><span class="line">fmt.Println(record.name) &#x2F;&#x2F; Michał</span><br><span class="line">fmt.Println(record.age) &#x2F;&#x2F; 29</span><br><span class="line">fmt.Println(record.position) &#x2F;&#x2F; software engineer</span><br><span class="line">fmt.Println(record.IsAdult()) &#x2F;&#x2F; true</span><br><span class="line">fmt.Println(record.IsManager()) &#x2F;&#x2F; false</span><br></pre></td></tr></table></figure>
+
+<p>匿名（嵌入）的字段和方法被调用时会自动向上提升（来找到对应的对象）。<br>他们的行为跟常规字段类似，但却不能用于结构体字面值：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">//record := Record&#123;&#125;</span></span><br><span class="line">record := Record&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它将导致编译器抛出错误：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;&#x2F; src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:23: unknown Record field ‘name’ in struct literal</span><br><span class="line">&#x2F;&#x2F; src&#x2F;github.com&#x2F;mlowicki&#x2F;sandbox&#x2F;sandbox.go:23: unknown Record field ‘age’ in struct literal</span><br></pre></td></tr></table></figure>
+
+<p>可以通过创建一个明确的，完整的，嵌入的结构体来达到我们的目的：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">Record&#123;Person&#123;name: <span class="string">"Michał"</span>, age: <span class="number">29</span>&#125;, Employee&#123;position: <span class="string">"Software Engineer"</span>&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://golang.org/ref/spec#Struct_types" target="_blank" rel="noopener">来源：</a><br><img src="https://github.com/gogeof/gctt-images/blob/master/gogeof/Promoted%20fields%20and%20methods%20in%20Go/promoted-fields-and-methods-in-go-1.jpg?raw=true" alt=""></p>
+<hr>
+<p>via: <a href="https://medium.com/golangspec/promoted-fields-and-methods-in-go-4e8d7aefb3e3" target="_blank" rel="noopener">https://medium.com/golangspec/promoted-fields-and-methods-in-go-4e8d7aefb3e3</a></p>
+<p>作者：<a href="https://medium.com/@mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+]]></content>
+      <tags>
+        <tag>翻译文章</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>【译】Go 语言中的可赋值性</title>
     <url>/2018/02/07/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E5%8F%AF%E8%B5%8B%E5%80%BC%E6%80%A7/</url>
     <content><![CDATA[<p>Go 是静态类型的编程语言。存储到变量中的值必须与变量的类型匹配。因此，不能像 Python 这种动态类型语言一样，随意的数据都可以作为值赋给变量。这个决定什么是允许赋值的规则就叫做可赋值性（Assignability）。</p>
@@ -206,39 +206,6 @@
 <p>via: <a href="https://medium.com/golangspec/assignability-in-go-27805bcd5874" target="_blank" rel="noopener">https://medium.com/golangspec/assignability-in-go-27805bcd5874</a></p>
 <p> 作者：<a href="https://twitter.com/mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br> 译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">Miancai Li</a><br> 校对：<a href="https://github.com/polaris1119" target="_blank" rel="noopener">polaris1119</a></p>
 <p> 本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
-]]></content>
-      <tags>
-        <tag>翻译文章</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【译】Golang 数据库 mocks</title>
-    <url>/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91Golang-%E6%95%B0%E6%8D%AE%E5%BA%93-mocks/</url>
-    <content><![CDATA[<p>我们<a href="https://heupr.io/" target="_blank" rel="noopener">当前项目的核心</a>是一个 <a href="https://www.memsql.com/" target="_blank" rel="noopener">MemSQL</a> 数据库，它是我们核心的数据管道；这是一个非常酷的技术，它的速度非常快，我们实在是太喜欢它了。但是，测试跟它相关的代码却有点困难，这个问题通过试验或者当遇到错误（主要是遇到错误）时，很快就可以发现。由于 Go 标准包已通过全面的测试，我只需要确保调用和依赖他们的代码在生产中也能够正常运行就好。</p>
-<a id="more"></a>
-
-<p>测试我们项目的数据库代码，我通过两个步骤完成。</p>
-<p>通过 database/sql 包，我们有了 sql.DB 结构，它代表一系列mocks的连接，以及包含一系列与这些连接进行交互的方法。在我们的代码库中，我们使用了其中的两个（以及一个返回打开的数据库的函数）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(driverName, dataSourceName <span class="keyword">string</span>)</span> <span class="params">(*DB, error)</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(db *DB)</span> <span class="title">Close</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(db *DB)</span> <span class="title">Query</span><span class="params">(query <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(*Rows, error)</span></span></span><br></pre></td></tr></table></figure>
-
-<p>接着，我像下面这样创建了一个名为 sqlDB 的接口：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> sqlDB <span class="keyword">interface</span> &#123;</span><br><span class="line">    Open(driverName, dataSourceName <span class="keyword">string</span>) (*sql.DB, error)</span><br><span class="line">    Close() error</span><br><span class="line">    Query(query <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;) (*sql.Rows, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这是一个 “曲线救国” 的想法，我定义了一个由 sql.DB 结构方法实现的接口。有了这个接口，再加上单元测试可以直接使用测试对象，立马就可以测试围绕这些函数/方法的调用代码。请注意，由于在返回值中依赖了诸如 sql.Rows 之类的，导致需要一些额外的配置，但它确实让需要测试的范围更接近于实际的 database/sql 包（即，需要测试的东西更加少）。</p>
-<p>接着，我构建第二个步骤的测试。定义了一个 dataAccess 接口，其中包含返回，将供后面处理的，准备好的对象的特定方法。这些函数将调用上面的 sqlDB 接口定义的方法，（下面的）这些方法从我们的代码库和单元测试中进一步封装了 database/sql 包：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> dataAccess <span class="keyword">interface</span> &#123;</span><br><span class="line">    readIntegrations(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>]*integration, error)</span><br><span class="line">    readSettings(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>]*settings, error)</span><br><span class="line">    readEvents(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>][]*preprocess.Container, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>再一次使用接口，可以让我们在测试中替换更多的生产代码，并让我们在调用这些接口代码时，可以关注（更多）不同的测试用例和场景。</p>
-<p>简单地说：</p>
-<ul>
-<li>sqlDB 接口可以让我们立即测试与数据库对象交互的相关代码（而不需要真的启动一个数据库并注入各种表） - （例如）测试处理数据库查询之类的东西</li>
-<li>dataAccess 接口允许我们对依赖它的值进行单元测试，例如上面返回的 map 结果 - 后面的想法也都是这样</li>
-</ul>
-<p>对（依赖于）数据库相关的代码进行单元测试有不同的方法，而这就是我在 Go 项目中采用的方法 - 我非常乐意提供（我的）建议，或者方案，以及快乐地进行单元测试的方法！</p>
-<hr>
-<p>via: <a href="https://dev.to/forstmeier/golang-database-mocks-1hm9" target="_blank" rel="noopener">https://dev.to/forstmeier/golang-database-mocks-1hm9</a></p>
-<p>作者：<a href="https://dev.to/forstmeier" target="_blank" rel="noopener">John Forstmeier</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/rxcai" target="_blank" rel="noopener">rxcai</a></p>
-<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
         <tag>翻译文章</tag>
@@ -291,38 +258,32 @@
       </tags>
   </entry>
   <entry>
-    <title>【译】关于在 Go 代码中使用退避方法，啰嗦几句</title>
-    <url>/2018/03/06/%E3%80%90%E8%AF%91%E3%80%91%E5%85%B3%E4%BA%8E%E5%9C%A8-Go-%E4%BB%A3%E7%A0%81%E4%B8%AD%E4%BD%BF%E7%94%A8%E9%80%80%E9%81%BF%E6%96%B9%E6%B3%95%EF%BC%8C%E5%95%B0%E5%97%A6%E5%87%A0%E5%8F%A5/</url>
-    <content><![CDATA[<p>我相信你有过调用 API 接口需要使用退避算法的时候。在 Go 语言现有技术中，有 <a href="https://github.com/cenkalti/backoff" target="_blank" rel="noopener">github.com/cenkalti/backoff</a>，<a href="https://github.com/jpillora/backoff" target="_blank" rel="noopener">github.com/jpillora/backoff</a>，和其它库可以使用。</p>
+    <title>【译】Golang 数据库 mocks</title>
+    <url>/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91Golang-%E6%95%B0%E6%8D%AE%E5%BA%93-mocks/</url>
+    <content><![CDATA[<p>我们<a href="https://heupr.io/" target="_blank" rel="noopener">当前项目的核心</a>是一个 <a href="https://www.memsql.com/" target="_blank" rel="noopener">MemSQL</a> 数据库，它是我们核心的数据管道；这是一个非常酷的技术，它的速度非常快，我们实在是太喜欢它了。但是，测试跟它相关的代码却有点困难，这个问题通过试验或者当遇到错误（主要是遇到错误）时，很快就可以发现。由于 Go 标准包已通过全面的测试，我只需要确保调用和依赖他们的代码在生产中也能够正常运行就好。</p>
 <a id="more"></a>
 
-<p>我曾经使用过 <a href="https://github.com/cenkalti/backoff" target="_blank" rel="noopener">github.com/cenkalti/backoff</a>，但是有一件让我感到困惑的事：它要求你为操作加上闭包，强制输入为 func() error 的形式。</p>
-<p>举个例子，当你需要一个可以自动重试的函数（如下面的 myFunc 函数），返回 3 个值和一个 error，你需要和作用域斗智斗勇。</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a, b, c Result</span><br><span class="line">backoff.Retry(<span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">  <span class="keyword">var</span> err error</span><br><span class="line">  a, b, c, err = myFunc(arg, ...)</span><br><span class="line">  <span class="keyword">return</span> err</span><br><span class="line">&#125;, backoffObject)</span><br></pre></td></tr></table></figure>
+<p>测试我们项目的数据库代码，我通过两个步骤完成。</p>
+<p>通过 database/sql 包，我们有了 sql.DB 结构，它代表一系列mocks的连接，以及包含一系列与这些连接进行交互的方法。在我们的代码库中，我们使用了其中的两个（以及一个返回打开的数据库的函数）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(driverName, dataSourceName <span class="keyword">string</span>)</span> <span class="params">(*DB, error)</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(db *DB)</span> <span class="title">Close</span><span class="params">()</span> <span class="title">error</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(db *DB)</span> <span class="title">Query</span><span class="params">(query <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;)</span> <span class="params">(*Rows, error)</span></span></span><br></pre></td></tr></table></figure>
 
-<p>在性能方面，这可能可以忽略不计，但作用域全搞乱了，这个时候你必须要小心，在赋值时不要使用 :=，而是使用 = 来确保获得正确的值。</p>
-<p>这是我写 <a href="github.com/lestrrat-go/backoff">github.com/lestrrat-go/backoff</a> 库的主要原因。</p>
-<p>使用这个库，你将不得不写更多的样板代码（使用库需要执行的函数：NewExponential()，Start() 等），但是你不需要实现一个闭包，我发现这样更加符合 Go 的风格。计算退避持续时间仍然很难，如果你有更好的算法，请告诉我。</p>
-<p>使用 <a href="github.com/lestrrat-go/backoff">github.com/lestrrat-go/backoff</a> 库，首先你要创建一个策略对象：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">policy := backoff.NewExponential(...)</span><br></pre></td></tr></table></figure>
+<p>接着，我像下面这样创建了一个名为 sqlDB 的接口：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> sqlDB <span class="keyword">interface</span> &#123;</span><br><span class="line">    Open(driverName, dataSourceName <span class="keyword">string</span>) (*sql.DB, error)</span><br><span class="line">    Close() error</span><br><span class="line">    Query(query <span class="keyword">string</span>, args ...<span class="keyword">interface</span>&#123;&#125;) (*sql.Rows, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>传入的参数也会影响到策略，例如配置最大重试次数或者不重试。策略对象可以被多个消费者重用。</p>
-<p>实际上 backoff 对象是通过调用策略对象的 Start() 方法创建的：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">b, cancel := policy.Start(ctx)</span><br></pre></td></tr></table></figure>
+<p>这是一个 “曲线救国” 的想法，我定义了一个由 sql.DB 结构方法实现的接口。有了这个接口，再加上单元测试可以直接使用测试对象，立马就可以测试围绕这些函数/方法的调用代码。请注意，由于在返回值中依赖了诸如 sql.Rows 之类的，导致需要一些额外的配置，但它确实让需要测试的范围更接近于实际的 database/sql 包（即，需要测试的东西更加少）。</p>
+<p>接着，我构建第二个步骤的测试。定义了一个 dataAccess 接口，其中包含返回，将供后面处理的，准备好的对象的特定方法。这些函数将调用上面的 sqlDB 接口定义的方法，（下面的）这些方法从我们的代码库和单元测试中进一步封装了 database/sql 包：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> dataAccess <span class="keyword">interface</span> &#123;</span><br><span class="line">    readIntegrations(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>]*integration, error)</span><br><span class="line">    readSettings(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>]*settings, error)</span><br><span class="line">    readEvents(query <span class="keyword">string</span>) (<span class="keyword">map</span>[<span class="keyword">int64</span>][]*preprocess.Container, error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>该方法接收一个 context 对象，因此你可以通过父作用域内的释放操作终止退避算法。</p>
-<p>当退避对象 b 不再需要时，cancel 用于释放资源。</p>
-<p>退避对象 b 包含两个方法，Done() 和 Next()。他们都返回一个可以通知我们事件的管道变量。</p>
-<p>当退避算法停止时，Done() 变得可读：（停止的情况）包括父 context 被取消导致退避算法被取消或者某个条件发生（例如当我们已经重试了 MaxRetries 参数指定的次数时）。</p>
-<p>当调用过了足够的时候后，Next() 才变为可读。在指数级回退的情况下，在调用 Next() 之后，你可能得等 1， 2， 4， 8， 16…（乘以基本区间）。</p>
-<p>使用这些方法，你的退避方法将看起来就像这样：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">MyFuncWithRetries</span><span class="params">(ctx context.Context, ... )</span> <span class="params">(Result1, Result2, Result3, error)</span></span> &#123;</span><br><span class="line">  b, cancel := policy.Start(ctx)</span><br><span class="line">  <span class="keyword">defer</span> cancel()</span><br><span class="line">  <span class="keyword">for</span> &#123;</span><br><span class="line">    ret1, ret2, ret3, err := MyFunc(...)</span><br><span class="line">    <span class="keyword">if</span> err == <span class="literal">nil</span> &#123; <span class="comment">// success</span></span><br><span class="line">      <span class="keyword">return</span> ret1, ret2, ret3, <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-b.Done():</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">nil</span>, <span class="literal">nil</span>, errors.New(<span class="string">`all attempts failed`</span>)</span><br><span class="line">    <span class="keyword">case</span> &lt;-b.Next():</span><br><span class="line">      <span class="comment">// continue to beginning of the for loop, execute MyFunc again</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>使用这种方法的缺点是你需要更多的样板代码。优点是你不再需要奇怪的作用域技巧，操作变得更加直接。</p>
-<p>我认为这是一个关于口味的问题，所以你应该选择符合你口味或者习惯的库。这恰好是我想要的库，希望也对你有帮助。</p>
-<p>编程快乐！</p>
-<p>via: <a href="https://medium.com/@lestrrat/yak-shaving-with-backoff-libraries-in-go-80240f0aa30c" target="_blank" rel="noopener">https://medium.com/@lestrrat/yak-shaving-with-backoff-libraries-in-go-80240f0aa30c</a></p>
-<p>作者：<a href="https://github.com/lestrrat" target="_blank" rel="noopener">Daisuke Maki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/rxcai" target="_blank" rel="noopener">rxcai</a></p>
+<p>再一次使用接口，可以让我们在测试中替换更多的生产代码，并让我们在调用这些接口代码时，可以关注（更多）不同的测试用例和场景。</p>
+<p>简单地说：</p>
+<ul>
+<li>sqlDB 接口可以让我们立即测试与数据库对象交互的相关代码（而不需要真的启动一个数据库并注入各种表） - （例如）测试处理数据库查询之类的东西</li>
+<li>dataAccess 接口允许我们对依赖它的值进行单元测试，例如上面返回的 map 结果 - 后面的想法也都是这样</li>
+</ul>
+<p>对（依赖于）数据库相关的代码进行单元测试有不同的方法，而这就是我在 Go 项目中采用的方法 - 我非常乐意提供（我的）建议，或者方案，以及快乐地进行单元测试的方法！</p>
+<hr>
+<p>via: <a href="https://dev.to/forstmeier/golang-database-mocks-1hm9" target="_blank" rel="noopener">https://dev.to/forstmeier/golang-database-mocks-1hm9</a></p>
+<p>作者：<a href="https://dev.to/forstmeier" target="_blank" rel="noopener">John Forstmeier</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/rxcai" target="_blank" rel="noopener">rxcai</a></p>
 <p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
@@ -362,6 +323,45 @@
 <hr>
 <p>via: <a href="https://boakye.yiadom.org/go/strings/" target="_blank" rel="noopener">https://boakye.yiadom.org/go/strings/</a></p>
 <p>作者：<a href="https://github.com/yawboakye" target="_blank" rel="noopener">Yaw Boakye</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/Unknwon" target="_blank" rel="noopener">Unknwon</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+]]></content>
+      <tags>
+        <tag>翻译文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【译】关于在 Go 代码中使用退避方法，啰嗦几句</title>
+    <url>/2018/03/06/%E3%80%90%E8%AF%91%E3%80%91%E5%85%B3%E4%BA%8E%E5%9C%A8-Go-%E4%BB%A3%E7%A0%81%E4%B8%AD%E4%BD%BF%E7%94%A8%E9%80%80%E9%81%BF%E6%96%B9%E6%B3%95%EF%BC%8C%E5%95%B0%E5%97%A6%E5%87%A0%E5%8F%A5/</url>
+    <content><![CDATA[<p>我相信你有过调用 API 接口需要使用退避算法的时候。在 Go 语言现有技术中，有 <a href="https://github.com/cenkalti/backoff" target="_blank" rel="noopener">github.com/cenkalti/backoff</a>，<a href="https://github.com/jpillora/backoff" target="_blank" rel="noopener">github.com/jpillora/backoff</a>，和其它库可以使用。</p>
+<a id="more"></a>
+
+<p>我曾经使用过 <a href="https://github.com/cenkalti/backoff" target="_blank" rel="noopener">github.com/cenkalti/backoff</a>，但是有一件让我感到困惑的事：它要求你为操作加上闭包，强制输入为 func() error 的形式。</p>
+<p>举个例子，当你需要一个可以自动重试的函数（如下面的 myFunc 函数），返回 3 个值和一个 error，你需要和作用域斗智斗勇。</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> a, b, c Result</span><br><span class="line">backoff.Retry(<span class="function"><span class="keyword">func</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">  <span class="keyword">var</span> err error</span><br><span class="line">  a, b, c, err = myFunc(arg, ...)</span><br><span class="line">  <span class="keyword">return</span> err</span><br><span class="line">&#125;, backoffObject)</span><br></pre></td></tr></table></figure>
+
+<p>在性能方面，这可能可以忽略不计，但作用域全搞乱了，这个时候你必须要小心，在赋值时不要使用 :=，而是使用 = 来确保获得正确的值。</p>
+<p>这是我写 <a href="github.com/lestrrat-go/backoff">github.com/lestrrat-go/backoff</a> 库的主要原因。</p>
+<p>使用这个库，你将不得不写更多的样板代码（使用库需要执行的函数：NewExponential()，Start() 等），但是你不需要实现一个闭包，我发现这样更加符合 Go 的风格。计算退避持续时间仍然很难，如果你有更好的算法，请告诉我。</p>
+<p>使用 <a href="github.com/lestrrat-go/backoff">github.com/lestrrat-go/backoff</a> 库，首先你要创建一个策略对象：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">policy := backoff.NewExponential(...)</span><br></pre></td></tr></table></figure>
+
+<p>传入的参数也会影响到策略，例如配置最大重试次数或者不重试。策略对象可以被多个消费者重用。</p>
+<p>实际上 backoff 对象是通过调用策略对象的 Start() 方法创建的：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line">b, cancel := policy.Start(ctx)</span><br></pre></td></tr></table></figure>
+
+<p>该方法接收一个 context 对象，因此你可以通过父作用域内的释放操作终止退避算法。</p>
+<p>当退避对象 b 不再需要时，cancel 用于释放资源。</p>
+<p>退避对象 b 包含两个方法，Done() 和 Next()。他们都返回一个可以通知我们事件的管道变量。</p>
+<p>当退避算法停止时，Done() 变得可读：（停止的情况）包括父 context 被取消导致退避算法被取消或者某个条件发生（例如当我们已经重试了 MaxRetries 参数指定的次数时）。</p>
+<p>当调用过了足够的时候后，Next() 才变为可读。在指数级回退的情况下，在调用 Next() 之后，你可能得等 1， 2， 4， 8， 16…（乘以基本区间）。</p>
+<p>使用这些方法，你的退避方法将看起来就像这样：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">MyFuncWithRetries</span><span class="params">(ctx context.Context, ... )</span> <span class="params">(Result1, Result2, Result3, error)</span></span> &#123;</span><br><span class="line">  b, cancel := policy.Start(ctx)</span><br><span class="line">  <span class="keyword">defer</span> cancel()</span><br><span class="line">  <span class="keyword">for</span> &#123;</span><br><span class="line">    ret1, ret2, ret3, err := MyFunc(...)</span><br><span class="line">    <span class="keyword">if</span> err == <span class="literal">nil</span> &#123; <span class="comment">// success</span></span><br><span class="line">      <span class="keyword">return</span> ret1, ret2, ret3, <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-b.Done():</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>, <span class="literal">nil</span>, <span class="literal">nil</span>, errors.New(<span class="string">`all attempts failed`</span>)</span><br><span class="line">    <span class="keyword">case</span> &lt;-b.Next():</span><br><span class="line">      <span class="comment">// continue to beginning of the for loop, execute MyFunc again</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用这种方法的缺点是你需要更多的样板代码。优点是你不再需要奇怪的作用域技巧，操作变得更加直接。</p>
+<p>我认为这是一个关于口味的问题，所以你应该选择符合你口味或者习惯的库。这恰好是我想要的库，希望也对你有帮助。</p>
+<p>编程快乐！</p>
+<p>via: <a href="https://medium.com/@lestrrat/yak-shaving-with-backoff-libraries-in-go-80240f0aa30c" target="_blank" rel="noopener">https://medium.com/@lestrrat/yak-shaving-with-backoff-libraries-in-go-80240f0aa30c</a></p>
+<p>作者：<a href="https://github.com/lestrrat" target="_blank" rel="noopener">Daisuke Maki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/rxcai" target="_blank" rel="noopener">rxcai</a></p>
 <p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
@@ -458,6 +458,71 @@
 <hr>
 <p>via: <a href="https://www.ardanlabs.com/blog/2013/05/thread-pooling-in-go-programming.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2013/05/thread-pooling-in-go-programming.html</a></p>
 <p>作者：<a href="https://github.com/ardanlabs/gotraining" target="_blank" rel="noopener">William Kennedy</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+]]></content>
+      <tags>
+        <tag>翻译文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【译】Golang 中的标签</title>
+    <url>/2019/01/27/%E3%80%90%E8%AF%91%E3%80%91Golang-%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/</url>
+    <content><![CDATA[<p>结构体字段的声明可以通过之后放置的文字来标记。标签添加由当前包或外部包使用的元信息。让我们首先回首一下 strcut 声明的样子，然后我们将扔出几个用例，深入研究这个标签。</p>
+<a id="more"></a>
+
+<h2 id="结构体类型（Struct-type）"><a href="#结构体类型（Struct-type）" class="headerlink" title="结构体类型（Struct type）"></a>结构体类型（Struct type）</h2><p>Struct 是一系列字段。每个字段由可选名称和所需类型（<a href="https://play.golang.org/p/q2V_op8_SJk" target="_blank" rel="noopener">源代码</a>）组成：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">    T1</span><br><span class="line">    f2     <span class="keyword">int64</span></span><br><span class="line">    f3, f4 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T2&#123;T1&#123;<span class="string">"foo"</span>&#125;, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    fmt.Println(t.f1)    <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.T1.f1) <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.f2)    <span class="comment">// 1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>T1 域被称为嵌入字段，因为它是用类型声明但没有名称。</p>
+<p>字段声明可以在 T2 中指定来自第 3 个字段声明的 f3 和 f4 之类的多个标识符。</p>
+<p>语言规范声明每个字段声明后面跟着分号，但正如我们上面所见，它可以省略。如果需要将多个字段声明放入同一行（源代码），分号可能很有用（<a href="https://play.golang.org/p/nTTgVX7BqV8" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">int64</span>; f2 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">2</span>&#125;</span><br><span class="line">    fmt.Println(t.f1, t.f2)  <span class="comment">// 1 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="标签（Tag）"><a href="#标签（Tag）" class="headerlink" title="标签（Tag）"></a>标签（Tag）</h2><p>字段声明后面可以跟一个可选的字符串文字（标记），它称为相应字段声明中所有字段的属性（单字段声明可以指定多个标识符）。让我们看看它的实际应用（<a href="https://play.golang.org/p/BubxnOxpOcM" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以使用原始字符串文字或解释的字符串文字，但下面描述的传统格式需要原始字符串文字。<a href="https://golang.org/ref/spec#String_literals" target="_blank" rel="noopener">规范</a>中描述了原始字符串文字和解释字符串文字之间的差异。</p>
+<p>如果字段声明包含多个标识符，则标记将附加到字段声明的所有字段（如上面的字段 f4 和 f5）。</p>
+<h2 id="反射（Reflection）"><a href="#反射（Reflection）" class="headerlink" title="反射（Reflection）"></a>反射（Reflection）</h2><p>标签可通过 reflect 包访问，允许运行时反射（<a href="https://play.golang.org/p/YYEAfGc6iaE" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"reflect"</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Println(f1.Tag) <span class="comment">// f one</span></span><br><span class="line">    f4, _ := t.FieldByName(<span class="string">"f4"</span>)</span><br><span class="line">    fmt.Println(f4.Tag) <span class="comment">// f four and five</span></span><br><span class="line">    f5, _ := t.FieldByName(<span class="string">"f5"</span>)</span><br><span class="line">    fmt.Println(f5.Tag) <span class="comment">// f four and five</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>设置空标记与完全不使用标记的效果相同（<a href="https://play.golang.org/p/u5VUMXz01cJ" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span> <span class="string">``</span></span><br><span class="line">    f2 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f1.Tag) <span class="comment">// ""</span></span><br><span class="line">    f2, _ := t.FieldByName(<span class="string">"f2"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f2.Tag) <span class="comment">// ""</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="常规格式（Conventional-format）"><a href="#常规格式（Conventional-format）" class="headerlink" title="常规格式（Conventional format）"></a>常规格式（Conventional format）</h2><p>在提交中引入“反射：支持多个包使用结构标记”允许为每个包设置元信息。这提供了简单的命名空间。标签被格式化为键的串联：“值”对。密钥可能是像 json 这样的包的名称。对可以选择用空格分隔 - key1:“ value1” key2: “value2” key3: “value3”。 如果使用传统格式，那么我们可以使用两种 struct tag （StructTag）方法 - Get 或 Lookup。它们允许返回与所需键内部标记相关联的值。</p>
+<p>Lookup 函数返回两个值 - 与键关联的值（如果未设置则为空）和 bool，指示是否已找到键（<a href="https://play.golang.org/p/i2Vh3tfN3A5" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">`one:"1" two:"2"blank:""`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1" two:"2"blank:""</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"blank"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"five"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Get 方法只是 Lookup 简单的包封装器，它丢弃了 bool 值（<a href="https://github.com/golang/go/blob/1b1c8b34d129eefcdbad234914df999581e62b2f/src/reflect/type.go#L1163" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(tag StructTag)</span> <span class="title">Get</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    v, _ := tag.Lookup(key)</span><br><span class="line">    <span class="keyword">return</span> v</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果标签不是常规模式，则不指定 Get 或 Lookup 的返回值。</p>
+<p>即使 tag 是任何字符串值（不管是释义或原始值），只有在双引号（<a href="">源代码</a>）之间包含值时，Lookup 和 Get 方法才会找到 key 的值：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:`1`"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:`1`</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以在解释的字符串值中使用转义双引号（<a href="https://play.golang.org/p/o5APz18OH6e" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:\"1\""</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1"</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但可读性就要低很多。</p>
+<h2 id="结论（Conversion）"><a href="#结论（Conversion）" class="headerlink" title="结论（Conversion）"></a>结论（Conversion）</h2><p>将结构体类型转换为其他类型要求底层类型相同，但忽略掉 tag（<a href="https://play.golang.org/p/C7M0bVwYFK2" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"foo"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"bar"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> t1 := T1&#123;<span class="number">10</span>&#125;</span><br><span class="line"> <span class="keyword">var</span> t2 T2</span><br><span class="line"> t2 = T2(t1)</span><br><span class="line"> fmt.Println(t2) <span class="comment">// &#123;10&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>Go 1.8 （提案）中引入了此行为。在 Go 1.7 及更早版本的代码中，可能会抛出编译时错误。</p>
+<h2 id="用例（Use-cases）"><a href="#用例（Use-cases）" class="headerlink" title="用例（Use cases）"></a>用例（Use cases）</h2><h3 id="Un-marshaling"><a href="#Un-marshaling" class="headerlink" title="(Un)marshaling"></a>(Un)marshaling</h3><p>Go 中标签最常见的用途可能是编组。让我们看一下来自 json 包的函数 Marshal 如何使用它（<a href="https://play.golang.org/p/C1hAMXTKPM_S" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"encoding/json"</span></span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">       F1 <span class="keyword">int</span> <span class="string">`json:"f_1"`</span></span><br><span class="line">       F2 <span class="keyword">int</span> <span class="string">`json:"f_2,omitempty"`</span></span><br><span class="line">       F3 <span class="keyword">int</span> <span class="string">`json:"f_3,omitempty"`</span></span><br><span class="line">       F4 <span class="keyword">int</span> <span class="string">`json:"-"`</span></span><br><span class="line">    &#125;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    b, err := json.Marshal(t)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">"%s\n"</span>, b) <span class="comment">// &#123;"f_1":1,"f_3":2&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>xml 包也利用了标签 - <a href="https://golang.org/pkg/encoding/xml/#MarshalIndent" target="_blank" rel="noopener">https://golang.org/pkg/encoding/xml/#MarshalIndent</a>.</p>
+<h2 id="ORM"><a href="#ORM" class="headerlink" title="ORM"></a>ORM</h2><p>像 GORM 这样的对象关系映射工具，也广泛使用标签 - <a href="https://github.com/jinzhu/gorm/blob/58e34726dfc069b558038efbaa25555f182d1f7a/multi_primary_keys_test.go#L10" target="_blank" rel="noopener">例子</a>.</p>
+<h2 id="摘要数据（Digesting-forms-data）"><a href="#摘要数据（Digesting-forms-data）" class="headerlink" title="摘要数据（Digesting forms data）"></a>摘要数据（Digesting forms data）</h2><p><a href="https://godoc.org/github.com/gorilla/schema" target="_blank" rel="noopener">https://godoc.org/github.com/gorilla/schema</a></p>
+<h2 id="其他（Other）"><a href="#其他（Other）" class="headerlink" title="其他（Other）"></a>其他（Other）</h2><p>标签的更多潜在用例，如配置管理，结构的默认值，验证，命令行参数描述等（<a href="https://github.com/golang/go/wiki/Well-known-struct-tags" target="_blank" rel="noopener">众所周知的结构标记列表</a>）。</p>
+<h2 id="go-vet"><a href="#go-vet" class="headerlink" title="go vet"></a>go vet</h2><p>Go 编译器没有强制执行传统的 struct 标签格式，但是 vet 就是这样做的，所以值得使用它，例如作为 CI 管道的一部分。</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one two three"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;&#125;</span><br><span class="line">&gt; <span class="keyword">go</span> vet tags.<span class="keyword">go</span></span><br><span class="line">tags.<span class="keyword">go</span>:<span class="number">4</span>: <span class="keyword">struct</span> field tag <span class="string">`one two three`</span> not compatible with reflect.StructTag.Get: bad syntax <span class="keyword">for</span> <span class="keyword">struct</span> tag pair</span><br></pre></td></tr></table></figure>
+
+<p>…</p>
+<p>由于 struct 标签，程序员可以从单一来源中受益。Go 是一种使用语言，所以即使可以使用专用数据结构等其他方式来控制整个过程来解决 JSON/XML 编码，Golang 也能让软件工程师的生活变得更轻松。值得一提的是，标签的长度不受规格的限制。</p>
+<hr>
+<p>via: <a href="https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e" target="_blank" rel="noopener">https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e</a></p>
+<p>作者：<a href="https://medium.com/@mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
 <p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
@@ -651,71 +716,6 @@
       </tags>
   </entry>
   <entry>
-    <title>【译】Golang 中的标签</title>
-    <url>/2019/01/27/%E3%80%90%E8%AF%91%E3%80%91Golang-%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/</url>
-    <content><![CDATA[<p>结构体字段的声明可以通过之后放置的文字来标记。标签添加由当前包或外部包使用的元信息。让我们首先回首一下 strcut 声明的样子，然后我们将扔出几个用例，深入研究这个标签。</p>
-<a id="more"></a>
-
-<h2 id="结构体类型（Struct-type）"><a href="#结构体类型（Struct-type）" class="headerlink" title="结构体类型（Struct type）"></a>结构体类型（Struct type）</h2><p>Struct 是一系列字段。每个字段由可选名称和所需类型（<a href="https://play.golang.org/p/q2V_op8_SJk" target="_blank" rel="noopener">源代码</a>）组成：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">    T1</span><br><span class="line">    f2     <span class="keyword">int64</span></span><br><span class="line">    f3, f4 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T2&#123;T1&#123;<span class="string">"foo"</span>&#125;, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    fmt.Println(t.f1)    <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.T1.f1) <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.f2)    <span class="comment">// 1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>T1 域被称为嵌入字段，因为它是用类型声明但没有名称。</p>
-<p>字段声明可以在 T2 中指定来自第 3 个字段声明的 f3 和 f4 之类的多个标识符。</p>
-<p>语言规范声明每个字段声明后面跟着分号，但正如我们上面所见，它可以省略。如果需要将多个字段声明放入同一行（源代码），分号可能很有用（<a href="https://play.golang.org/p/nTTgVX7BqV8" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">int64</span>; f2 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">2</span>&#125;</span><br><span class="line">    fmt.Println(t.f1, t.f2)  <span class="comment">// 1 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="标签（Tag）"><a href="#标签（Tag）" class="headerlink" title="标签（Tag）"></a>标签（Tag）</h2><p>字段声明后面可以跟一个可选的字符串文字（标记），它称为相应字段声明中所有字段的属性（单字段声明可以指定多个标识符）。让我们看看它的实际应用（<a href="https://play.golang.org/p/BubxnOxpOcM" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以使用原始字符串文字或解释的字符串文字，但下面描述的传统格式需要原始字符串文字。<a href="https://golang.org/ref/spec#String_literals" target="_blank" rel="noopener">规范</a>中描述了原始字符串文字和解释字符串文字之间的差异。</p>
-<p>如果字段声明包含多个标识符，则标记将附加到字段声明的所有字段（如上面的字段 f4 和 f5）。</p>
-<h2 id="反射（Reflection）"><a href="#反射（Reflection）" class="headerlink" title="反射（Reflection）"></a>反射（Reflection）</h2><p>标签可通过 reflect 包访问，允许运行时反射（<a href="https://play.golang.org/p/YYEAfGc6iaE" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"reflect"</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Println(f1.Tag) <span class="comment">// f one</span></span><br><span class="line">    f4, _ := t.FieldByName(<span class="string">"f4"</span>)</span><br><span class="line">    fmt.Println(f4.Tag) <span class="comment">// f four and five</span></span><br><span class="line">    f5, _ := t.FieldByName(<span class="string">"f5"</span>)</span><br><span class="line">    fmt.Println(f5.Tag) <span class="comment">// f four and five</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>设置空标记与完全不使用标记的效果相同（<a href="https://play.golang.org/p/u5VUMXz01cJ" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span> <span class="string">``</span></span><br><span class="line">    f2 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f1.Tag) <span class="comment">// ""</span></span><br><span class="line">    f2, _ := t.FieldByName(<span class="string">"f2"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f2.Tag) <span class="comment">// ""</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="常规格式（Conventional-format）"><a href="#常规格式（Conventional-format）" class="headerlink" title="常规格式（Conventional format）"></a>常规格式（Conventional format）</h2><p>在提交中引入“反射：支持多个包使用结构标记”允许为每个包设置元信息。这提供了简单的命名空间。标签被格式化为键的串联：“值”对。密钥可能是像 json 这样的包的名称。对可以选择用空格分隔 - key1:“ value1” key2: “value2” key3: “value3”。 如果使用传统格式，那么我们可以使用两种 struct tag （StructTag）方法 - Get 或 Lookup。它们允许返回与所需键内部标记相关联的值。</p>
-<p>Lookup 函数返回两个值 - 与键关联的值（如果未设置则为空）和 bool，指示是否已找到键（<a href="https://play.golang.org/p/i2Vh3tfN3A5" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">`one:"1" two:"2"blank:""`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1" two:"2"blank:""</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"blank"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"five"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Get 方法只是 Lookup 简单的包封装器，它丢弃了 bool 值（<a href="https://github.com/golang/go/blob/1b1c8b34d129eefcdbad234914df999581e62b2f/src/reflect/type.go#L1163" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(tag StructTag)</span> <span class="title">Get</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    v, _ := tag.Lookup(key)</span><br><span class="line">    <span class="keyword">return</span> v</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>如果标签不是常规模式，则不指定 Get 或 Lookup 的返回值。</p>
-<p>即使 tag 是任何字符串值（不管是释义或原始值），只有在双引号（<a href="">源代码</a>）之间包含值时，Lookup 和 Get 方法才会找到 key 的值：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:`1`"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:`1`</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>可以在解释的字符串值中使用转义双引号（<a href="https://play.golang.org/p/o5APz18OH6e" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:\"1\""</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1"</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>但可读性就要低很多。</p>
-<h2 id="结论（Conversion）"><a href="#结论（Conversion）" class="headerlink" title="结论（Conversion）"></a>结论（Conversion）</h2><p>将结构体类型转换为其他类型要求底层类型相同，但忽略掉 tag（<a href="https://play.golang.org/p/C7M0bVwYFK2" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"foo"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"bar"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> t1 := T1&#123;<span class="number">10</span>&#125;</span><br><span class="line"> <span class="keyword">var</span> t2 T2</span><br><span class="line"> t2 = T2(t1)</span><br><span class="line"> fmt.Println(t2) <span class="comment">// &#123;10&#125;</span></span><br></pre></td></tr></table></figure>
-
-<p>Go 1.8 （提案）中引入了此行为。在 Go 1.7 及更早版本的代码中，可能会抛出编译时错误。</p>
-<h2 id="用例（Use-cases）"><a href="#用例（Use-cases）" class="headerlink" title="用例（Use cases）"></a>用例（Use cases）</h2><h3 id="Un-marshaling"><a href="#Un-marshaling" class="headerlink" title="(Un)marshaling"></a>(Un)marshaling</h3><p>Go 中标签最常见的用途可能是编组。让我们看一下来自 json 包的函数 Marshal 如何使用它（<a href="https://play.golang.org/p/C1hAMXTKPM_S" target="_blank" rel="noopener">源代码</a>）：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"encoding/json"</span></span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">       F1 <span class="keyword">int</span> <span class="string">`json:"f_1"`</span></span><br><span class="line">       F2 <span class="keyword">int</span> <span class="string">`json:"f_2,omitempty"`</span></span><br><span class="line">       F3 <span class="keyword">int</span> <span class="string">`json:"f_3,omitempty"`</span></span><br><span class="line">       F4 <span class="keyword">int</span> <span class="string">`json:"-"`</span></span><br><span class="line">    &#125;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    b, err := json.Marshal(t)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">"%s\n"</span>, b) <span class="comment">// &#123;"f_1":1,"f_3":2&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>xml 包也利用了标签 - <a href="https://golang.org/pkg/encoding/xml/#MarshalIndent" target="_blank" rel="noopener">https://golang.org/pkg/encoding/xml/#MarshalIndent</a>.</p>
-<h2 id="ORM"><a href="#ORM" class="headerlink" title="ORM"></a>ORM</h2><p>像 GORM 这样的对象关系映射工具，也广泛使用标签 - <a href="https://github.com/jinzhu/gorm/blob/58e34726dfc069b558038efbaa25555f182d1f7a/multi_primary_keys_test.go#L10" target="_blank" rel="noopener">例子</a>.</p>
-<h2 id="摘要数据（Digesting-forms-data）"><a href="#摘要数据（Digesting-forms-data）" class="headerlink" title="摘要数据（Digesting forms data）"></a>摘要数据（Digesting forms data）</h2><p><a href="https://godoc.org/github.com/gorilla/schema" target="_blank" rel="noopener">https://godoc.org/github.com/gorilla/schema</a></p>
-<h2 id="其他（Other）"><a href="#其他（Other）" class="headerlink" title="其他（Other）"></a>其他（Other）</h2><p>标签的更多潜在用例，如配置管理，结构的默认值，验证，命令行参数描述等（<a href="https://github.com/golang/go/wiki/Well-known-struct-tags" target="_blank" rel="noopener">众所周知的结构标记列表</a>）。</p>
-<h2 id="go-vet"><a href="#go-vet" class="headerlink" title="go vet"></a>go vet</h2><p>Go 编译器没有强制执行传统的 struct 标签格式，但是 vet 就是这样做的，所以值得使用它，例如作为 CI 管道的一部分。</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one two three"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;&#125;</span><br><span class="line">&gt; <span class="keyword">go</span> vet tags.<span class="keyword">go</span></span><br><span class="line">tags.<span class="keyword">go</span>:<span class="number">4</span>: <span class="keyword">struct</span> field tag <span class="string">`one two three`</span> not compatible with reflect.StructTag.Get: bad syntax <span class="keyword">for</span> <span class="keyword">struct</span> tag pair</span><br></pre></td></tr></table></figure>
-
-<p>…</p>
-<p>由于 struct 标签，程序员可以从单一来源中受益。Go 是一种使用语言，所以即使可以使用专用数据结构等其他方式来控制整个过程来解决 JSON/XML 编码，Golang 也能让软件工程师的生活变得更轻松。值得一提的是，标签的长度不受规格的限制。</p>
-<hr>
-<p>via: <a href="https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e" target="_blank" rel="noopener">https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e</a></p>
-<p>作者：<a href="https://medium.com/@mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
-<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
-]]></content>
-      <tags>
-        <tag>翻译文章</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>【译】接口不是值类型</title>
     <url>/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91%E6%8E%A5%E5%8F%A3%E4%B8%8D%E6%98%AF%E5%80%BC%E7%B1%BB%E5%9E%8B/</url>
     <content><![CDATA[<h2 id="介绍（Introduction）"><a href="#介绍（Introduction）" class="headerlink" title="介绍（Introduction）"></a>介绍（Introduction）</h2><p>最近，在 Slack 上我看过大量关于接口的问题。大多数时候，答案都很有技术性，并都关注了实现的细节。实现（细节）对于调试很有帮助，但实现对设计却毫无帮助。当用接口来设计代码时，行为才是主要需要关注的。</p>
@@ -828,6 +828,109 @@
 <hr>
 <p>via: <a href="https://www.elliotdwright.com/2018/02/26/there-and-back-again/" target="_blank" rel="noopener">https://www.elliotdwright.com/2018/02/26/there-and-back-again/</a></p>
 <p>作者：<a href="https://github.com/seeruk" target="_blank" rel="noopener">Elliot Wright</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/polaris1119" target="_blank" rel="noopener">polaris1119</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+]]></content>
+      <tags>
+        <tag>翻译文章</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>【译】Go 语言机制之数据和语法的设计哲学</title>
+    <url>/2018/02/28/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E6%9C%BA%E5%88%B6%E4%B9%8B%E6%95%B0%E6%8D%AE%E5%92%8C%E8%AF%AD%E6%B3%95%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6/</url>
+    <content><![CDATA[<h2 id="前序（Prelude）"><a href="#前序（Prelude）" class="headerlink" title="前序（Prelude）"></a>前序（Prelude）</h2><p>本系列文章总共四篇，主要帮助大家理解 Go 语言中一些语法结构和其背后的设计原则，包括指针、栈、堆、逃逸分析和值或者指针传递。这是最后一篇，重点介绍在代码中使用值和指针的数据和语义的设计哲学。</p>
+<a id="more"></a>
+
+<p>以下是本系列文章的索引：</p>
+<p>1) <a href="https://www.goinggo.net/2017/05/language-mechanics-on-stacks-and-pointers.html" target="_blank" rel="noopener">Go 语言机制之栈与指针</a><br>2) <a href="https://www.ardanlabs.com/blog/2017/05/language-mechanics-on-escape-analysis.html" target="_blank" rel="noopener">Go 语言机制之逃逸分析</a><br>3) <a href="https://www.ardanlabs.com/blog/2017/06/language-mechanics-on-memory-profiling.html" target="_blank" rel="noopener">Go 语言机制之内存剖析</a><br>4) <a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">Go 语言机制之数据和语法的设计哲学</a></p>
+<h2 id="设计哲学（Design-Philosophies）"><a href="#设计哲学（Design-Philosophies）" class="headerlink" title="设计哲学（Design Philosophies）"></a>设计哲学（Design Philosophies）</h2><p>“在栈上保存值，这减少了垃圾收集器（GC）的压力。然而，却要求存储、跟踪和维护给定值的多个副本。将值放在堆上，这会给 GC 增加压力。但是它也是有用的，因为只需要针对一个值进行存储、跟踪和维护。” - Bill Kennedy</p>
+<p>对于给定类型的数据，想在整个软件中保持完整性和可读性，使用值或者指针要保持一致。为什么？因为，如果你在函数间传递数据时修改数据语义，将很难维护一个清晰一致的心智模型。代码库和团队越大，越多的 bug、对数据的竞争和其他副作用就会悄悄地潜入到代码库中。</p>
+<p>我想从一组设计哲学开始讨论，它将指导（我们如何）选择一种语义而不是另外一种语义的方法。</p>
+<h2 id="心智模型（Mental-Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）"><a href="#心智模型（Mental-Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）" class="headerlink" title="心智模型（Mental Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）"></a>心智模型（Mental Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）</h2><p>“让我们想象有这样一个项目，它包含一百万行以上的代码量。这些项目当前在美国能成功的可能性很低，远低于 50%。或许有人不同意这个说法。” - Tom Love (inventor of Objective C)</p>
+<p>Tom 还说一盒复印纸可以容纳 10 万行代码。稍微想一下。你能掌控这个盒子中的代码的百分之多少呢？</p>
+<p>我相信要一个开发人员维护一张纸上的代码的心智模型（大约 1 万行代码）已经是个问题。但是，我们还是假设每个开发人员开发 1 万行代码，那么需要由 100 位开发人员组成的团队来维护一个包含 100 万行代码的代码库。也就是说 100 人需要协调，分组，跟踪和不断沟通。现在，再看看你们 1 到 10 名开发人员组成的团队。你们在这个小得多的规模做得如何？假设每人 1 万行代码，（你们）团队规模与代码库的大小是否相符？</p>
+<h2 id="调试（Debugging）"><a href="#调试（Debugging）" class="headerlink" title="调试（Debugging）"></a>调试（Debugging）</h2><p>“最大的问题是你的心智模型是错误的，所以你根本找不到问题所在。” - Brian Kernighan</p>
+<p>我不相信，你能在没有心智模型的基础上，使用调试器解决问题，你只不过是在浪费时间精力尝试理解问题。</p>
+<p>如果你在生产环境中遇到问题，你能问谁？没错，日志。如果日志在你开发过程中对你没有用，那么当生产环境上出问题，它也一定对你没有用。日志应该基于代码的心智模型，这样才能通过阅读代码找到问题所在。</p>
+<h2 id="可读性（Readability）"><a href="#可读性（Readability）" class="headerlink" title="可读性（Readability）"></a>可读性（Readability）</h2><p>C 语言是我见过的在性能和表达性上平衡得最好的。你可以通过简单的编程实现任何你想要做的事情，并且你会对机器即将要发生的事情拥有一个非常好的心智模型。你可以非常合理地预测它的速度，你知道即将要发生什么…” - Brian Kernighan</p>
+<p>我相信 Brian 这句话也适用于 Go。保持这种 “心智模型” 就是一切。它驱动完整性，可读性和简单性。这些是精心编写的软件的基石，使得它可以保持正常并持续运行下去。编写保证给定类型数据的值或者指针语义一致的代码是实现这一点的重要方法。</p>
+<h2 id="面向数据设计（Data-Oriented-Design）"><a href="#面向数据设计（Data-Oriented-Design）" class="headerlink" title="面向数据设计（Data Oriented Design）"></a>面向数据设计（Data Oriented Design）</h2><p>“如果你不了解这些数据，你就不明白这个问题。因为所有的问题都是独特的，并且与你所使用的数据关系紧密。当数据发生变化时，你的问题也会跟着变化。但问题发生变化时，你的算法（数据转换）也需要跟着变化。” - Bill Kennedy</p>
+<p>想一想。你解决问题的方法实际上是解决数据转换的问题。你写的每个函数，运行的每个程序，（只不过）都是获取一些输入数据，产生一些输出数据。从这个角度看，你的软件的心智模型就是对这些数据转换的理解（例如，如何在代码中组织和使用它们）。”少即是多” 的原则对于解决问题时实现较少的层数，代码量，迭代次数，以及降低复杂性和减少工作量非常重要。</p>
+<h2 id="类型（就是生命）（Type-Is-Life-）"><a href="#类型（就是生命）（Type-Is-Life-）" class="headerlink" title="类型（就是生命）（Type (Is Life)）"></a>类型（就是生命）（Type (Is Life)）</h2><p>“完整性意味着每次分配内存，读取内存和写入内存都是准确，一致和高效的。类型系统对于我们具有这种微观完整性至关重要。” - William Kennedy</p>
+<p>如果数据驱动你所做的一切，那么代表数据的类型就十分地重要。在我的观点里面 “类型就是生命”，因为类型为编译器提供了确保数据完整性的能力。类型也驱动并指示语义规则，程序必须遵循其所操作的数据的语义。这是正确地使用值或者指针语义的开始：使用类型。</p>
+<h2 id="数据（的能力）"><a href="#数据（的能力）" class="headerlink" title="数据（的能力）"></a>数据（的能力）</h2><p>“当数据是实际和合理的，方法才是有效的。” - William Kennedy</p>
+<p>值或者指针语义的思想不会直接影响 Go 开发人员，除非他们需要决定方法接收值还是指针。这是我遇到的一个问题：我应该使用值作为参数还是指针？一听到这个问题，我就知道这个开发人员没有理解好这些（类型的）语义。</p>
+<p>方法的目的是使这些数据具有某种能力。想象一下，数据有能力做某些事情。我总是希望把重点放在数据上，因为它驱动程序的功能。数据驱动你写的算法，封装和能达到的性能。</p>
+<h2 id="多态（Polymorphism）"><a href="#多态（Polymorphism）" class="headerlink" title="多态（Polymorphism）"></a>多态（Polymorphism）</h2><p>“多态意味着你写了一个特定的程序，但它的行为有所不同，具体取决于它所操作的数据。” - Tom Kurtz (inventor of BASIC)</p>
+<p>我很喜欢 Tom 上面说的话。函数的行为可以根据操作的数据的不同而不同。这个数据的行为是将函数从它们可以接受和使用的具体数据类型中分离出来的，这是数据可以具有某种能力的原因。这个观点是使得架构和设计可以适应变化的系统的基石。</p>
+<h2 id="原型的第一种方法（Prototype-First-Approach）"><a href="#原型的第一种方法（Prototype-First-Approach）" class="headerlink" title="原型的第一种方法（Prototype First Approach）"></a>原型的第一种方法（Prototype First Approach）</h2><p>“除非开发人员对软件会被如何使用有一个很好的了解，否则软件很可能会出问题。如果开发人员不是很了解或者对软件不是很理解，那么获得尽可能多的用户输入和用户级测试就相当的重要。” - Brian Kernighan</p>
+<p>我希望你始终专注于理解具体的数据和为了解决问题所需要的数据转换的算法。采用这种原型的第一种方法，编写也可以在生产环境中部署的具体实现（如果这样做是合理和实际的话）。一旦一个具体的实现已经能够工作，一旦你已经知道哪些工作起作用，哪些不起作用，就应该关注于重构，将实现与具体数据分离，将之赋予数据以能力（译者注：我的理解，简单地说，就是抽象为数据类型的一个方法）。</p>
+<h2 id="语义原则（Semantic-Guidelines）"><a href="#语义原则（Semantic-Guidelines）" class="headerlink" title="语义原则（Semantic Guidelines）"></a>语义原则（Semantic Guidelines）</h2><p>你在声明类型时，必须决定特定数据类型将使用哪种语义，值或者指针。接收或返回该类型数据的 API 必须遵循为该类型选择的语义。API 不允许（用户）指定或改变语义。他们必须知道数据使用什么语义，并符合这一点。这是实现大型代码库一致性的起码要求。</p>
+<p>以下是基本指导原则：</p>
+<ul>
+<li>当你声明一个类型时，你必须决定所使用的语义</li>
+<li>函数和方法必须遵循给定类型所选择的语义</li>
+<li>避免让方法接收与给定类型相对应的不同语义</li>
+<li>避免函数接收或者返回与给定类型相对应的不同语义</li>
+<li>避免改变给定类型的语义</li>
+</ul>
+<p>这些指导原则有一些例外的情况，最大的是 unmarshaling。Unmarshaling 总是需要使用指针语义。Marshaling 和 unmarshaling 似乎总是例外的规则。</p>
+<p>你如何选择一种给定类型的一种语义而不是另外一种？这些指导方针将回答这个问题。以下我们将在具体的情况下使用指导原则：</p>
+<h2 id="内置类型"><a href="#内置类型" class="headerlink" title="内置类型"></a>内置类型</h2><p>Go 语言中内置类型包括数字，文本和布尔类型。这些类型应该使用值语义进行处理。除非你有非常好的理由，否则不要使用指针来共享这些类型的值。</p>
+<p>作为一个例子，从 strings 包中查看这些函数的声明。</p>
+<h3 id="代码清单-1"><a href="#代码清单-1" class="headerlink" title="代码清单 1"></a>代码清单 1</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Replace</span><span class="params">(s, old, <span class="built_in">new</span> <span class="keyword">string</span>, n <span class="keyword">int</span>)</span> <span class="title">string</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LastIndex</span><span class="params">(s, sep <span class="keyword">string</span>)</span> <span class="title">int</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ContainsRune</span><span class="params">(s <span class="keyword">string</span>, r <span class="keyword">rune</span>)</span> <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
+
+<p>所有这些函数在 API 设置中都使用值语义。</p>
+<h2 id="引用类型"><a href="#引用类型" class="headerlink" title="引用类型"></a>引用类型</h2><p>Go 语言中引用类型包括切片，map，接口，函数和 channel。这些类型建议使用值语义，因为它们被设计成待在栈中以最小化堆的压力。它们允许每个函数都有自己的值副本，而不是每个函数都会造成潜在的分配。这是可能的，因为这些值包含一个在调用之间共享底层数据结构的指针。</p>
+<p>除非你有很好的理由，否则不要用指针共享这些类型的值。将调用栈中的 map 或 slice 共享给 Unmarshal 函数可能是一个例外。作为一个例子，看看 net 库上声明的这两种类型。</p>
+<h3 id="代码清单-2"><a href="#代码清单-2" class="headerlink" title="代码清单 2"></a>代码清单 2</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> IP []<span class="keyword">byte</span></span><br><span class="line"><span class="keyword">type</span> IPMask []<span class="keyword">byte</span></span><br></pre></td></tr></table></figure>
+
+<p>IP 和 IPMask 都是字节切片。这意味着它们是引用类型，并且它们应该要符合值语义。下面是一个名叫 Mask 的方法，它被声明为接收一个 IPMask 值的 IP 类型。</p>
+<h3 id="代码清单-3"><a href="#代码清单-3" class="headerlink" title="代码清单 3"></a>代码清单 3</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ip IP)</span> <span class="title">Mask</span><span class="params">(mask IPMask)</span> <span class="title">IP</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(mask) == IPv6len &amp;&amp; <span class="built_in">len</span>(ip) == IPv4len &amp;&amp; allFF(mask[:<span class="number">12</span>]) &#123;</span><br><span class="line">        mask = mask[<span class="number">12</span>:]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(mask) == IPv4len &amp;&amp; <span class="built_in">len</span>(ip) == IPv6len &amp;&amp; bytesEqual(ip[:<span class="number">12</span>], v4InV6Prefix) &#123;</span><br><span class="line">        ip = ip[<span class="number">12</span>:]</span><br><span class="line">    &#125;</span><br><span class="line">    n := <span class="built_in">len</span>(ip)</span><br><span class="line">    <span class="keyword">if</span> n != <span class="built_in">len</span>(mask) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    out := <span class="built_in">make</span>(IP, n)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">        out[i] = ip[i] &amp; mask[i]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>请注意，此方法是一种转变操作，并使用值语义的 API 样式。它使用 IP 值作为接收方，并根据传入的 IPMask 值创建一个新的 IP 值并将其返回给调用方。该方法遵循对引用类型使用值语义（的基本指导原则）。</p>
+<p>这跟系统默认的 append 函数有点相似。</p>
+<h3 id="代码清单-4"><a href="#代码清单-4" class="headerlink" title="代码清单 4"></a>代码清单 4</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> data []<span class="keyword">string</span></span><br><span class="line">data = <span class="built_in">append</span>(data, <span class="string">"string"</span>)</span><br></pre></td></tr></table></figure>
+
+<p>append 函数的转变操作使用值语义。将切片值传递给 append，并在变化之后返回一个新切片值。</p>
+<p>总是除了 unmarshaling，它需要使用指针语义。</p>
+<h3 id="代码清单-5"><a href="#代码清单-5" class="headerlink" title="代码清单 5"></a>代码清单 5</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ip *IP)</span> <span class="title">UnmarshalText</span><span class="params">(text []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">  	<span class="keyword">if</span> <span class="built_in">len</span>(text) == <span class="number">0</span> &#123;</span><br><span class="line">  		*ip = <span class="literal">nil</span></span><br><span class="line">  		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">  	&#125;</span><br><span class="line">  	s := <span class="keyword">string</span>(text)</span><br><span class="line">  	x := ParseIP(s)</span><br><span class="line">  	<span class="keyword">if</span> x == <span class="literal">nil</span> &#123;</span><br><span class="line">  		<span class="keyword">return</span> &amp;ParseError&#123;Type: <span class="string">"IP address"</span>, Text: s&#125;</span><br><span class="line">  	&#125;</span><br><span class="line">  	*ip = x</span><br><span class="line">  	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>UnmarshalText 实现 encoding.TextUnmarshaler 接口。如果没有使用指针语义，根本无法实现。但这是可以的，因为共享值通常是安全的。除了 unmarshaling 之外，如果为一个引用类型使用指针语义，你应该三思。</p>
+<h3 id="用户定义类型（User-Defined-Types）"><a href="#用户定义类型（User-Defined-Types）" class="headerlink" title="用户定义类型（User Defined Types）"></a>用户定义类型（User Defined Types）</h3><p>这是你最多需要作出决定的地方。你必须在你声明类型的时候决定使用什么语义。</p>
+<p>如果我要求你给 time 包编写 API 接口，给你这种类型。</p>
+<h3 id="代码清单-6"><a href="#代码清单-6" class="headerlink" title="代码清单 6"></a>代码清单 6</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> Time <span class="keyword">struct</span> &#123;</span><br><span class="line">    sec  <span class="keyword">int64</span></span><br><span class="line">    nsec <span class="keyword">int32</span></span><br><span class="line">    loc  *Location</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你会使用什么语义？</p>
+<p>在 Time 包中查看此类型的实现以及工厂函数 Now。</p>
+<h3 id="代码清单-7"><a href="#代码清单-7" class="headerlink" title="代码清单 7"></a>代码清单 7</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Now</span><span class="params">()</span> <span class="title">Time</span></span> &#123;</span><br><span class="line">  	sec, nsec := now()</span><br><span class="line">  	<span class="keyword">return</span> Time&#123;sec + unixToInternal, nsec, Local&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>工厂函数对于类型来说是一种非常重要的函数，因为它告诉你（这种类型）所选择的语义。Now 函数就很清晰地（向我们）表明使用了值语义。该函数创建一个类型为 Time 的值并将该值的副本返回给调用者。 共享 Time 值不是必要的，（因为）他们的生命周期内不需要一直存在于堆上。</p>
+<p>再看一下 Add 方法，它也是一个转变操作。</p>
+<h3 id="代码清单-8"><a href="#代码清单-8" class="headerlink" title="代码清单 8"></a>代码清单 8</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t Time)</span> <span class="title">Add</span><span class="params">(d Duration)</span> <span class="title">Time</span></span> &#123;</span><br><span class="line">  	t.sec += <span class="keyword">int64</span>(d / <span class="number">1e9</span>)</span><br><span class="line">  	nsec := t.nsec + <span class="keyword">int32</span>(d%<span class="number">1e9</span>)</span><br><span class="line">  	<span class="keyword">if</span> nsec &gt;= <span class="number">1e9</span> &#123;</span><br><span class="line">  		t.sec++</span><br><span class="line">  		nsec -= <span class="number">1e9</span></span><br><span class="line">  	&#125; <span class="keyword">else</span> <span class="keyword">if</span> nsec &lt; <span class="number">0</span> &#123;</span><br><span class="line">  		t.sec--</span><br><span class="line">  		nsec += <span class="number">1e9</span></span><br><span class="line">  	&#125;</span><br><span class="line">  	t.nsec = nsec</span><br><span class="line">  	<span class="keyword">return</span> t</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你可以再次看到 Add 方法遵循类型所选择的语义。Add 方法使用一个值接收器来操作它自己的 Time 值副本。其中，Time 值副本在调用中使用。它将修改自己的副本，并将 Time 值的新副本返回给调用者。</p>
+<p>以下是一个接受 Time 值的函数：</p>
+<h3 id="代码清单-9"><a href="#代码清单-9" class="headerlink" title="代码清单 9"></a>代码清单 9</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">div</span><span class="params">(t Time, d Duration)</span> <span class="params">(qmod2 <span class="keyword">int</span>, r Duration)</span></span> &#123;</span><br></pre></td></tr></table></figure>
+
+<p>再一次，接受 Time 类型的值使用值语义。唯一使用指针语义的 Time API 接口，是这些 Unmarshal 相关的函数：</p>
+<h3 id="代码清单-10"><a href="#代码清单-10" class="headerlink" title="代码清单 10"></a>代码清单 10</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalBinary</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">GobDecode</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalJSON</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalText</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br></pre></td></tr></table></figure>
+
+<p>大多数情况下，使用值语义的能力是有限的。将值从一个函数传递到另一个函数，（通常）使用值拷贝的方法是不正确或者不合理的。修改数据需要将其隔离成单个值再进行共享。这时，应该使用指针语义。如果你没办法 100% 确定拷贝值是正确并且合理的，那就使用指针语义吧。</p>
+<p>查看 os 包中的 File 类型的生产函数。</p>
+<h3 id="代码清单-11"><a href="#代码清单-11" class="headerlink" title="代码清单 11"></a>代码清单 11</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(file *File, err error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> OpenFile(name, O_RDONLY, <span class="number">0</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Open 函数返回一个 File 类型的指针。这意味着，对于 File 类型值，你应该使用指针语义来共享 File 的值。将指针语义修改为值语义，可能会对你的程序造成破坏性影响。当你与一个函数共享值时，最好假定你不允许拷贝值的指针并使用这个指针。否则，不知道将会出现什么样的异常情况。</p>
+<p>查看更多的 API， 你将会看到更多使用指针语义的例子。</p>
+<h3 id="代码清单-12"><a href="#代码清单-12" class="headerlink" title="代码清单 12"></a>代码清单 12</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Chdir</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> f == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ErrInvalid</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> e := syscall.Fchdir(f.fd); e != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &amp;PathError&#123;<span class="string">"chdir"</span>, f.name, e&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虽然 File 值永远不会被修改，但是 Chdir 方法还是使用指针语义。该方法必须遵循该类型的语义约定。</p>
+<h3 id="代码清单-13"><a href="#代码清单-13" class="headerlink" title="代码清单 13"></a>代码清单 13</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">epipecheck</span><span class="params">(file *File, e error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> e == syscall.EPIPE &#123;</span><br><span class="line">        <span class="keyword">if</span> atomic.AddInt32(&amp;file.nepipe, <span class="number">1</span>) &gt;= <span class="number">10</span> &#123;</span><br><span class="line">            sigpipe()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        atomic.StoreInt32(&amp;file.nepipe, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是一个名为 epipecheck 的函数，它使用指针来接收 File 值。再次注意一下，对于 File 值，一致使用指针语义。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>我在做代码 review 时，会寻找值或者指针语义是否使用一致。它可以帮助你保证代码的一致性和可预测性。它还使每个人能保持清晰和一致的心智模型。随着代码库和团队变得越来越大，值或者指针语义的一致性使用将会越来越重要。</p>
+<p>Go 语言令人不解的地方在于指针和值语义之间的选择早已超出了接收器和函数参数的声明范围。接口的机制，函数值和切片都在语言的工作范围内。在将来的文章中，我将在这些语言的不同部分中展示值或者指针语义。</p>
+<p>via: <a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html</a></p>
+<p>作者：<a href="https://github.com/ardanlabs/gotraining" target="_blank" rel="noopener">William Kennedy</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：</p>
 <p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
@@ -956,109 +1059,6 @@
 <p>这就是说，写程序时永远不要把性能作为第一优先级，因为你并不想（在写程序时）一直猜测性能。写正确的代码才是你第一优先级。这意味着，我们首先要关注的是完整性、可读性和简单性。一旦有了可以运行的程序，才需要确定程序是否足够快。假如程序不够快，那么使用语言提供的工具来查找和解决性能问题。</p>
 <p>via: <a href="https://www.ardanlabs.com/blog/2017/06/language-mechanics-on-memory-profiling.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2017/06/language-mechanics-on-memory-profiling.html</a></p>
 <p>作者：<a href="https://github.com/ardanlabs/gotraining" target="_blank" rel="noopener">William Kennedy</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/polaris1119" target="_blank" rel="noopener">polaris1119</a></p>
-<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
-]]></content>
-      <tags>
-        <tag>翻译文章</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>【译】Go 语言机制之数据和语法的设计哲学</title>
-    <url>/2018/02/28/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E6%9C%BA%E5%88%B6%E4%B9%8B%E6%95%B0%E6%8D%AE%E5%92%8C%E8%AF%AD%E6%B3%95%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6/</url>
-    <content><![CDATA[<h2 id="前序（Prelude）"><a href="#前序（Prelude）" class="headerlink" title="前序（Prelude）"></a>前序（Prelude）</h2><p>本系列文章总共四篇，主要帮助大家理解 Go 语言中一些语法结构和其背后的设计原则，包括指针、栈、堆、逃逸分析和值或者指针传递。这是最后一篇，重点介绍在代码中使用值和指针的数据和语义的设计哲学。</p>
-<a id="more"></a>
-
-<p>以下是本系列文章的索引：</p>
-<p>1) <a href="https://www.goinggo.net/2017/05/language-mechanics-on-stacks-and-pointers.html" target="_blank" rel="noopener">Go 语言机制之栈与指针</a><br>2) <a href="https://www.ardanlabs.com/blog/2017/05/language-mechanics-on-escape-analysis.html" target="_blank" rel="noopener">Go 语言机制之逃逸分析</a><br>3) <a href="https://www.ardanlabs.com/blog/2017/06/language-mechanics-on-memory-profiling.html" target="_blank" rel="noopener">Go 语言机制之内存剖析</a><br>4) <a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">Go 语言机制之数据和语法的设计哲学</a></p>
-<h2 id="设计哲学（Design-Philosophies）"><a href="#设计哲学（Design-Philosophies）" class="headerlink" title="设计哲学（Design Philosophies）"></a>设计哲学（Design Philosophies）</h2><p>“在栈上保存值，这减少了垃圾收集器（GC）的压力。然而，却要求存储、跟踪和维护给定值的多个副本。将值放在堆上，这会给 GC 增加压力。但是它也是有用的，因为只需要针对一个值进行存储、跟踪和维护。” - Bill Kennedy</p>
-<p>对于给定类型的数据，想在整个软件中保持完整性和可读性，使用值或者指针要保持一致。为什么？因为，如果你在函数间传递数据时修改数据语义，将很难维护一个清晰一致的心智模型。代码库和团队越大，越多的 bug、对数据的竞争和其他副作用就会悄悄地潜入到代码库中。</p>
-<p>我想从一组设计哲学开始讨论，它将指导（我们如何）选择一种语义而不是另外一种语义的方法。</p>
-<h2 id="心智模型（Mental-Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）"><a href="#心智模型（Mental-Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）" class="headerlink" title="心智模型（Mental Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）"></a>心智模型（Mental Models）（译者注：心智模型是经由经验及学习，脑海中对某些事物发展的过程，所写下的剧本。可以当成对代码整体的把控）</h2><p>“让我们想象有这样一个项目，它包含一百万行以上的代码量。这些项目当前在美国能成功的可能性很低，远低于 50%。或许有人不同意这个说法。” - Tom Love (inventor of Objective C)</p>
-<p>Tom 还说一盒复印纸可以容纳 10 万行代码。稍微想一下。你能掌控这个盒子中的代码的百分之多少呢？</p>
-<p>我相信要一个开发人员维护一张纸上的代码的心智模型（大约 1 万行代码）已经是个问题。但是，我们还是假设每个开发人员开发 1 万行代码，那么需要由 100 位开发人员组成的团队来维护一个包含 100 万行代码的代码库。也就是说 100 人需要协调，分组，跟踪和不断沟通。现在，再看看你们 1 到 10 名开发人员组成的团队。你们在这个小得多的规模做得如何？假设每人 1 万行代码，（你们）团队规模与代码库的大小是否相符？</p>
-<h2 id="调试（Debugging）"><a href="#调试（Debugging）" class="headerlink" title="调试（Debugging）"></a>调试（Debugging）</h2><p>“最大的问题是你的心智模型是错误的，所以你根本找不到问题所在。” - Brian Kernighan</p>
-<p>我不相信，你能在没有心智模型的基础上，使用调试器解决问题，你只不过是在浪费时间精力尝试理解问题。</p>
-<p>如果你在生产环境中遇到问题，你能问谁？没错，日志。如果日志在你开发过程中对你没有用，那么当生产环境上出问题，它也一定对你没有用。日志应该基于代码的心智模型，这样才能通过阅读代码找到问题所在。</p>
-<h2 id="可读性（Readability）"><a href="#可读性（Readability）" class="headerlink" title="可读性（Readability）"></a>可读性（Readability）</h2><p>C 语言是我见过的在性能和表达性上平衡得最好的。你可以通过简单的编程实现任何你想要做的事情，并且你会对机器即将要发生的事情拥有一个非常好的心智模型。你可以非常合理地预测它的速度，你知道即将要发生什么…” - Brian Kernighan</p>
-<p>我相信 Brian 这句话也适用于 Go。保持这种 “心智模型” 就是一切。它驱动完整性，可读性和简单性。这些是精心编写的软件的基石，使得它可以保持正常并持续运行下去。编写保证给定类型数据的值或者指针语义一致的代码是实现这一点的重要方法。</p>
-<h2 id="面向数据设计（Data-Oriented-Design）"><a href="#面向数据设计（Data-Oriented-Design）" class="headerlink" title="面向数据设计（Data Oriented Design）"></a>面向数据设计（Data Oriented Design）</h2><p>“如果你不了解这些数据，你就不明白这个问题。因为所有的问题都是独特的，并且与你所使用的数据关系紧密。当数据发生变化时，你的问题也会跟着变化。但问题发生变化时，你的算法（数据转换）也需要跟着变化。” - Bill Kennedy</p>
-<p>想一想。你解决问题的方法实际上是解决数据转换的问题。你写的每个函数，运行的每个程序，（只不过）都是获取一些输入数据，产生一些输出数据。从这个角度看，你的软件的心智模型就是对这些数据转换的理解（例如，如何在代码中组织和使用它们）。”少即是多” 的原则对于解决问题时实现较少的层数，代码量，迭代次数，以及降低复杂性和减少工作量非常重要。</p>
-<h2 id="类型（就是生命）（Type-Is-Life-）"><a href="#类型（就是生命）（Type-Is-Life-）" class="headerlink" title="类型（就是生命）（Type (Is Life)）"></a>类型（就是生命）（Type (Is Life)）</h2><p>“完整性意味着每次分配内存，读取内存和写入内存都是准确，一致和高效的。类型系统对于我们具有这种微观完整性至关重要。” - William Kennedy</p>
-<p>如果数据驱动你所做的一切，那么代表数据的类型就十分地重要。在我的观点里面 “类型就是生命”，因为类型为编译器提供了确保数据完整性的能力。类型也驱动并指示语义规则，程序必须遵循其所操作的数据的语义。这是正确地使用值或者指针语义的开始：使用类型。</p>
-<h2 id="数据（的能力）"><a href="#数据（的能力）" class="headerlink" title="数据（的能力）"></a>数据（的能力）</h2><p>“当数据是实际和合理的，方法才是有效的。” - William Kennedy</p>
-<p>值或者指针语义的思想不会直接影响 Go 开发人员，除非他们需要决定方法接收值还是指针。这是我遇到的一个问题：我应该使用值作为参数还是指针？一听到这个问题，我就知道这个开发人员没有理解好这些（类型的）语义。</p>
-<p>方法的目的是使这些数据具有某种能力。想象一下，数据有能力做某些事情。我总是希望把重点放在数据上，因为它驱动程序的功能。数据驱动你写的算法，封装和能达到的性能。</p>
-<h2 id="多态（Polymorphism）"><a href="#多态（Polymorphism）" class="headerlink" title="多态（Polymorphism）"></a>多态（Polymorphism）</h2><p>“多态意味着你写了一个特定的程序，但它的行为有所不同，具体取决于它所操作的数据。” - Tom Kurtz (inventor of BASIC)</p>
-<p>我很喜欢 Tom 上面说的话。函数的行为可以根据操作的数据的不同而不同。这个数据的行为是将函数从它们可以接受和使用的具体数据类型中分离出来的，这是数据可以具有某种能力的原因。这个观点是使得架构和设计可以适应变化的系统的基石。</p>
-<h2 id="原型的第一种方法（Prototype-First-Approach）"><a href="#原型的第一种方法（Prototype-First-Approach）" class="headerlink" title="原型的第一种方法（Prototype First Approach）"></a>原型的第一种方法（Prototype First Approach）</h2><p>“除非开发人员对软件会被如何使用有一个很好的了解，否则软件很可能会出问题。如果开发人员不是很了解或者对软件不是很理解，那么获得尽可能多的用户输入和用户级测试就相当的重要。” - Brian Kernighan</p>
-<p>我希望你始终专注于理解具体的数据和为了解决问题所需要的数据转换的算法。采用这种原型的第一种方法，编写也可以在生产环境中部署的具体实现（如果这样做是合理和实际的话）。一旦一个具体的实现已经能够工作，一旦你已经知道哪些工作起作用，哪些不起作用，就应该关注于重构，将实现与具体数据分离，将之赋予数据以能力（译者注：我的理解，简单地说，就是抽象为数据类型的一个方法）。</p>
-<h2 id="语义原则（Semantic-Guidelines）"><a href="#语义原则（Semantic-Guidelines）" class="headerlink" title="语义原则（Semantic Guidelines）"></a>语义原则（Semantic Guidelines）</h2><p>你在声明类型时，必须决定特定数据类型将使用哪种语义，值或者指针。接收或返回该类型数据的 API 必须遵循为该类型选择的语义。API 不允许（用户）指定或改变语义。他们必须知道数据使用什么语义，并符合这一点。这是实现大型代码库一致性的起码要求。</p>
-<p>以下是基本指导原则：</p>
-<ul>
-<li>当你声明一个类型时，你必须决定所使用的语义</li>
-<li>函数和方法必须遵循给定类型所选择的语义</li>
-<li>避免让方法接收与给定类型相对应的不同语义</li>
-<li>避免函数接收或者返回与给定类型相对应的不同语义</li>
-<li>避免改变给定类型的语义</li>
-</ul>
-<p>这些指导原则有一些例外的情况，最大的是 unmarshaling。Unmarshaling 总是需要使用指针语义。Marshaling 和 unmarshaling 似乎总是例外的规则。</p>
-<p>你如何选择一种给定类型的一种语义而不是另外一种？这些指导方针将回答这个问题。以下我们将在具体的情况下使用指导原则：</p>
-<h2 id="内置类型"><a href="#内置类型" class="headerlink" title="内置类型"></a>内置类型</h2><p>Go 语言中内置类型包括数字，文本和布尔类型。这些类型应该使用值语义进行处理。除非你有非常好的理由，否则不要使用指针来共享这些类型的值。</p>
-<p>作为一个例子，从 strings 包中查看这些函数的声明。</p>
-<h3 id="代码清单-1"><a href="#代码清单-1" class="headerlink" title="代码清单 1"></a>代码清单 1</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Replace</span><span class="params">(s, old, <span class="built_in">new</span> <span class="keyword">string</span>, n <span class="keyword">int</span>)</span> <span class="title">string</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">LastIndex</span><span class="params">(s, sep <span class="keyword">string</span>)</span> <span class="title">int</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ContainsRune</span><span class="params">(s <span class="keyword">string</span>, r <span class="keyword">rune</span>)</span> <span class="title">bool</span></span></span><br></pre></td></tr></table></figure>
-
-<p>所有这些函数在 API 设置中都使用值语义。</p>
-<h2 id="引用类型"><a href="#引用类型" class="headerlink" title="引用类型"></a>引用类型</h2><p>Go 语言中引用类型包括切片，map，接口，函数和 channel。这些类型建议使用值语义，因为它们被设计成待在栈中以最小化堆的压力。它们允许每个函数都有自己的值副本，而不是每个函数都会造成潜在的分配。这是可能的，因为这些值包含一个在调用之间共享底层数据结构的指针。</p>
-<p>除非你有很好的理由，否则不要用指针共享这些类型的值。将调用栈中的 map 或 slice 共享给 Unmarshal 函数可能是一个例外。作为一个例子，看看 net 库上声明的这两种类型。</p>
-<h3 id="代码清单-2"><a href="#代码清单-2" class="headerlink" title="代码清单 2"></a>代码清单 2</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> IP []<span class="keyword">byte</span></span><br><span class="line"><span class="keyword">type</span> IPMask []<span class="keyword">byte</span></span><br></pre></td></tr></table></figure>
-
-<p>IP 和 IPMask 都是字节切片。这意味着它们是引用类型，并且它们应该要符合值语义。下面是一个名叫 Mask 的方法，它被声明为接收一个 IPMask 值的 IP 类型。</p>
-<h3 id="代码清单-3"><a href="#代码清单-3" class="headerlink" title="代码清单 3"></a>代码清单 3</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ip IP)</span> <span class="title">Mask</span><span class="params">(mask IPMask)</span> <span class="title">IP</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(mask) == IPv6len &amp;&amp; <span class="built_in">len</span>(ip) == IPv4len &amp;&amp; allFF(mask[:<span class="number">12</span>]) &#123;</span><br><span class="line">        mask = mask[<span class="number">12</span>:]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(mask) == IPv4len &amp;&amp; <span class="built_in">len</span>(ip) == IPv6len &amp;&amp; bytesEqual(ip[:<span class="number">12</span>], v4InV6Prefix) &#123;</span><br><span class="line">        ip = ip[<span class="number">12</span>:]</span><br><span class="line">    &#125;</span><br><span class="line">    n := <span class="built_in">len</span>(ip)</span><br><span class="line">    <span class="keyword">if</span> n != <span class="built_in">len</span>(mask) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">    &#125;</span><br><span class="line">    out := <span class="built_in">make</span>(IP, n)</span><br><span class="line">    <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">        out[i] = ip[i] &amp; mask[i]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> out</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>请注意，此方法是一种转变操作，并使用值语义的 API 样式。它使用 IP 值作为接收方，并根据传入的 IPMask 值创建一个新的 IP 值并将其返回给调用方。该方法遵循对引用类型使用值语义（的基本指导原则）。</p>
-<p>这跟系统默认的 append 函数有点相似。</p>
-<h3 id="代码清单-4"><a href="#代码清单-4" class="headerlink" title="代码清单 4"></a>代码清单 4</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> data []<span class="keyword">string</span></span><br><span class="line">data = <span class="built_in">append</span>(data, <span class="string">"string"</span>)</span><br></pre></td></tr></table></figure>
-
-<p>append 函数的转变操作使用值语义。将切片值传递给 append，并在变化之后返回一个新切片值。</p>
-<p>总是除了 unmarshaling，它需要使用指针语义。</p>
-<h3 id="代码清单-5"><a href="#代码清单-5" class="headerlink" title="代码清单 5"></a>代码清单 5</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(ip *IP)</span> <span class="title">UnmarshalText</span><span class="params">(text []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">  	<span class="keyword">if</span> <span class="built_in">len</span>(text) == <span class="number">0</span> &#123;</span><br><span class="line">  		*ip = <span class="literal">nil</span></span><br><span class="line">  		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">  	&#125;</span><br><span class="line">  	s := <span class="keyword">string</span>(text)</span><br><span class="line">  	x := ParseIP(s)</span><br><span class="line">  	<span class="keyword">if</span> x == <span class="literal">nil</span> &#123;</span><br><span class="line">  		<span class="keyword">return</span> &amp;ParseError&#123;Type: <span class="string">"IP address"</span>, Text: s&#125;</span><br><span class="line">  	&#125;</span><br><span class="line">  	*ip = x</span><br><span class="line">  	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>UnmarshalText 实现 encoding.TextUnmarshaler 接口。如果没有使用指针语义，根本无法实现。但这是可以的，因为共享值通常是安全的。除了 unmarshaling 之外，如果为一个引用类型使用指针语义，你应该三思。</p>
-<h3 id="用户定义类型（User-Defined-Types）"><a href="#用户定义类型（User-Defined-Types）" class="headerlink" title="用户定义类型（User Defined Types）"></a>用户定义类型（User Defined Types）</h3><p>这是你最多需要作出决定的地方。你必须在你声明类型的时候决定使用什么语义。</p>
-<p>如果我要求你给 time 包编写 API 接口，给你这种类型。</p>
-<h3 id="代码清单-6"><a href="#代码清单-6" class="headerlink" title="代码清单 6"></a>代码清单 6</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> Time <span class="keyword">struct</span> &#123;</span><br><span class="line">    sec  <span class="keyword">int64</span></span><br><span class="line">    nsec <span class="keyword">int32</span></span><br><span class="line">    loc  *Location</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>你会使用什么语义？</p>
-<p>在 Time 包中查看此类型的实现以及工厂函数 Now。</p>
-<h3 id="代码清单-7"><a href="#代码清单-7" class="headerlink" title="代码清单 7"></a>代码清单 7</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Now</span><span class="params">()</span> <span class="title">Time</span></span> &#123;</span><br><span class="line">  	sec, nsec := now()</span><br><span class="line">  	<span class="keyword">return</span> Time&#123;sec + unixToInternal, nsec, Local&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>工厂函数对于类型来说是一种非常重要的函数，因为它告诉你（这种类型）所选择的语义。Now 函数就很清晰地（向我们）表明使用了值语义。该函数创建一个类型为 Time 的值并将该值的副本返回给调用者。 共享 Time 值不是必要的，（因为）他们的生命周期内不需要一直存在于堆上。</p>
-<p>再看一下 Add 方法，它也是一个转变操作。</p>
-<h3 id="代码清单-8"><a href="#代码清单-8" class="headerlink" title="代码清单 8"></a>代码清单 8</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t Time)</span> <span class="title">Add</span><span class="params">(d Duration)</span> <span class="title">Time</span></span> &#123;</span><br><span class="line">  	t.sec += <span class="keyword">int64</span>(d / <span class="number">1e9</span>)</span><br><span class="line">  	nsec := t.nsec + <span class="keyword">int32</span>(d%<span class="number">1e9</span>)</span><br><span class="line">  	<span class="keyword">if</span> nsec &gt;= <span class="number">1e9</span> &#123;</span><br><span class="line">  		t.sec++</span><br><span class="line">  		nsec -= <span class="number">1e9</span></span><br><span class="line">  	&#125; <span class="keyword">else</span> <span class="keyword">if</span> nsec &lt; <span class="number">0</span> &#123;</span><br><span class="line">  		t.sec--</span><br><span class="line">  		nsec += <span class="number">1e9</span></span><br><span class="line">  	&#125;</span><br><span class="line">  	t.nsec = nsec</span><br><span class="line">  	<span class="keyword">return</span> t</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>你可以再次看到 Add 方法遵循类型所选择的语义。Add 方法使用一个值接收器来操作它自己的 Time 值副本。其中，Time 值副本在调用中使用。它将修改自己的副本，并将 Time 值的新副本返回给调用者。</p>
-<p>以下是一个接受 Time 值的函数：</p>
-<h3 id="代码清单-9"><a href="#代码清单-9" class="headerlink" title="代码清单 9"></a>代码清单 9</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">div</span><span class="params">(t Time, d Duration)</span> <span class="params">(qmod2 <span class="keyword">int</span>, r Duration)</span></span> &#123;</span><br></pre></td></tr></table></figure>
-
-<p>再一次，接受 Time 类型的值使用值语义。唯一使用指针语义的 Time API 接口，是这些 Unmarshal 相关的函数：</p>
-<h3 id="代码清单-10"><a href="#代码清单-10" class="headerlink" title="代码清单 10"></a>代码清单 10</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalBinary</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">GobDecode</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalJSON</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *Time)</span> <span class="title">UnmarshalText</span><span class="params">(data []<span class="keyword">byte</span>)</span> <span class="title">error</span></span> &#123;</span><br></pre></td></tr></table></figure>
-
-<p>大多数情况下，使用值语义的能力是有限的。将值从一个函数传递到另一个函数，（通常）使用值拷贝的方法是不正确或者不合理的。修改数据需要将其隔离成单个值再进行共享。这时，应该使用指针语义。如果你没办法 100% 确定拷贝值是正确并且合理的，那就使用指针语义吧。</p>
-<p>查看 os 包中的 File 类型的生产函数。</p>
-<h3 id="代码清单-11"><a href="#代码清单-11" class="headerlink" title="代码清单 11"></a>代码清单 11</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Open</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(file *File, err error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">return</span> OpenFile(name, O_RDONLY, <span class="number">0</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>Open 函数返回一个 File 类型的指针。这意味着，对于 File 类型值，你应该使用指针语义来共享 File 的值。将指针语义修改为值语义，可能会对你的程序造成破坏性影响。当你与一个函数共享值时，最好假定你不允许拷贝值的指针并使用这个指针。否则，不知道将会出现什么样的异常情况。</p>
-<p>查看更多的 API， 你将会看到更多使用指针语义的例子。</p>
-<h3 id="代码清单-12"><a href="#代码清单-12" class="headerlink" title="代码清单 12"></a>代码清单 12</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(f *File)</span> <span class="title">Chdir</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> f == <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ErrInvalid</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> e := syscall.Fchdir(f.fd); e != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> &amp;PathError&#123;<span class="string">"chdir"</span>, f.name, e&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>虽然 File 值永远不会被修改，但是 Chdir 方法还是使用指针语义。该方法必须遵循该类型的语义约定。</p>
-<h3 id="代码清单-13"><a href="#代码清单-13" class="headerlink" title="代码清单 13"></a>代码清单 13</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">epipecheck</span><span class="params">(file *File, e error)</span></span> &#123;</span><br><span class="line">    <span class="keyword">if</span> e == syscall.EPIPE &#123;</span><br><span class="line">        <span class="keyword">if</span> atomic.AddInt32(&amp;file.nepipe, <span class="number">1</span>) &gt;= <span class="number">10</span> &#123;</span><br><span class="line">            sigpipe()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        atomic.StoreInt32(&amp;file.nepipe, <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这是一个名为 epipecheck 的函数，它使用指针来接收 File 值。再次注意一下，对于 File 值，一致使用指针语义。</p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>我在做代码 review 时，会寻找值或者指针语义是否使用一致。它可以帮助你保证代码的一致性和可预测性。它还使每个人能保持清晰和一致的心智模型。随着代码库和团队变得越来越大，值或者指针语义的一致性使用将会越来越重要。</p>
-<p>Go 语言令人不解的地方在于指针和值语义之间的选择早已超出了接收器和函数参数的声明范围。接口的机制，函数值和切片都在语言的工作范围内。在将来的文章中，我将在这些语言的不同部分中展示值或者指针语义。</p>
-<p>via: <a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html</a></p>
-<p>作者：<a href="https://github.com/ardanlabs/gotraining" target="_blank" rel="noopener">William Kennedy</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：</p>
 <p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
 ]]></content>
       <tags>
