@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="翻译文章," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="介绍（Introduction）最近，在 Slack 上我看过大量关于接口的问题。大多数时候，答案都很有技术性，并都关注了实现的细节。实现（细节）对于调试很有帮助，但实现对设计却毫无帮助。当用接口来设计代码时，行为才是主要需要关注的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】接口不是值类型">
+<meta property="og:url" content="http://yoursite.com/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91%E6%8E%A5%E5%8F%A3%E4%B8%8D%E6%98%AF%E5%80%BC%E7%B1%BB%E5%9E%8B/index.html">
+<meta property="og:site_name" content="分享">
+<meta property="og:description" content="介绍（Introduction）最近，在 Slack 上我看过大量关于接口的问题。大多数时候，答案都很有技术性，并都关注了实现的细节。实现（细节）对于调试很有帮助，但实现对设计却毫无帮助。当用接口来设计代码时，行为才是主要需要关注的。">
+<meta property="article:published_time" content="2018-04-15T13:54:32.000Z">
+<meta property="article:modified_time" content="2020-05-02T14:08:44.189Z">
+<meta property="article:author" content="Gogeof">
+<meta property="article:tag" content="翻译文章">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/04/15/【译】接口不是值类型/"/>
+
+
+
+
+
+  <title>【译】接口不是值类型 | 分享</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="分享" type="application/atom+xml">
+</head>
+
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta custom-logo">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">分享</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91%E6%8E%A5%E5%8F%A3%E4%B8%8D%E6%98%AF%E5%80%BC%E7%B1%BB%E5%9E%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gogeof">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="分享">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【译】接口不是值类型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-15T21:54:32+08:00">
+                2018-04-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3.6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  13
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="介绍（Introduction）"><a href="#介绍（Introduction）" class="headerlink" title="介绍（Introduction）"></a>介绍（Introduction）</h2><p>最近，在 Slack 上我看过大量关于接口的问题。大多数时候，答案都很有技术性，并都关注了实现的细节。实现（细节）对于调试很有帮助，但实现对设计却毫无帮助。当用接口来设计代码时，行为才是主要需要关注的。</p>
+<a id="more"></a>
+
+<p>在这篇博文中，我希望提供一个不同的思考方式，关于接口，和用他们进行代码设计。我想让你停止关注于实现细节，而是关注于接口和具体的数据的关系。</p>
+<h2 id="面向数据设计（Data-Oriented-Design）"><a href="#面向数据设计（Data-Oriented-Design）" class="headerlink" title="面向数据设计（Data Oriented Design）"></a>面向数据设计（Data Oriented Design）</h2><p>我相信写 Go 代码，应该用面向数据设计的方法，而不是面向对象。我的面向数据的第一条原则是：</p>
+<p>如果你不了解你要处理的数据，你肯定不懂你要解决的问题。</p>
+<p>所有你要解决的问题本质上就是数据转换的问题。有一些输入，然后你产生输出。这就是程序要做的事情。每一个你写的函数都是一个小的数据转换，（它们只是）为了帮助你解决大的数据转换。</p>
+<p>因为你要解决的问题就是数据转换的问题，你写的算法要基于具体的数据。具体数据就是你存储在内存中的物理状态，通过网络发送，写入文件并进行基本操作。<a href="https://mechanical-sympathy.blogspot.com/" target="_blank" rel="noopener">机器情绪</a>取决于具体的数据和你允许你的机器做怎样的数据转换。</p>
+<p>对面向数据的一个大的警告是关于如何处理修改。关于面向数据，我的第二条原则是：</p>
+<p>当数据修改时，你的问题就修改了。当你的问题修改了，那么你的算法就要跟着修改。</p>
+<p>一旦数据修改了，你的算法就需要修改。这是保证可读性和性能的最好方式。不幸的是，我们大多数人都被教导创建更多的抽象层，来处理变化。当设计需要修改时，我认为这种方式（创建更多的抽象层）将得不偿失。</p>
+<p>你需要的是允许你的算法保持精简，来执行需要的数据转换。当数据修改时，你需要这样一种方式，算法改变了但却不会导致整个代码库的大部分代码发生级联变化。这就是使用接口的时候。当你关注接口时，你其实想要关注的是行为。</p>
+<h2 id="具体数据（Concrete-Data）"><a href="#具体数据（Concrete-Data）" class="headerlink" title="具体数据（Concrete Data）"></a>具体数据（Concrete Data）</h2><p>因为每种事情都跟具体的数据有关，你应该从具体的数据开始。从具体的类型开始。</p>
+<h3 id="代码清单-1"><a href="#代码清单-1" class="headerlink" title="代码清单 1"></a>代码清单 1</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">05</span> <span class="keyword">type</span> file <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">06</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">07</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代码清单 1 中的第 5 行，关键字 <code>struct</code> 声明了一个名为 file 的类型。有了这个具体的类型声明，你可以创建一个这种类型的值。</p>
+<h3 id="代码清单-2"><a href="#代码清单-2" class="headerlink" title="代码清单 2"></a>代码清单 2</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">13</span> <span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"><span class="number">14</span>     <span class="keyword">var</span> f file</span><br></pre></td></tr></table></figure>
+
+<p>多亏了代码清单 2 中的第 14 行的声明，现在你有一个类型为 file，存在内存中，被命名为 f 的变量，并引用了具体的数据。这个数据被变量 f 索引，而且可以被操纵。</p>
+<p>你可以再次使用关键字 struct 来定义第二块具体数据。</p>
+<h3 id="代码清单-3"><a href="#代码清单-3" class="headerlink" title="代码清单 3"></a>代码清单 3</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">09</span> <span class="keyword">type</span> pipe <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">10</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">11</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代码清单 3 中的第 09 行声明了类型为 <code>pipe</code>，并拥有一部分具体的数据。再一次，有了这个类型的声明，你可以在程序中，创建一个不同的值。</p>
+<h3 id="代码清单-4"><a href="#代码清单-4" class="headerlink" title="代码清单 4"></a>代码清单 4</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">01</span> <span class="keyword">package</span> main</span><br><span class="line"><span class="number">02</span></span><br><span class="line"><span class="number">03</span> <span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="number">04</span></span><br><span class="line"><span class="number">05</span> <span class="keyword">type</span> file <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">06</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">07</span> &#125;</span><br><span class="line"><span class="number">08</span></span><br><span class="line"><span class="number">09</span> <span class="keyword">type</span> pipe <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">10</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">11</span> &#125;</span><br><span class="line"><span class="number">12</span></span><br><span class="line"><span class="number">13</span> <span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line"><span class="number">14</span>     <span class="keyword">var</span> f file</span><br><span class="line"><span class="number">15</span>     <span class="keyword">var</span> p pipe</span><br><span class="line"><span class="number">16</span></span><br><span class="line"><span class="number">17</span>     fmt.Println(f, p) </span><br><span class="line"><span class="number">18</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>现在，这个程序拥有两个清晰的具体数据定义，以及对应的一个值。在第 14 行，一个类型为 file 的值被创建，在第 15 行，一个类型为 pipe 的值被创建。为了程序完整，两个值在第 17 行都被 fmt 包展示出来。</p>
+<h2 id="接口值不是值类型（Interfaces-Are-Valueless）"><a href="#接口值不是值类型（Interfaces-Are-Valueless）" class="headerlink" title="接口值不是值类型（Interfaces Are Valueless）"></a>接口值不是值类型（Interfaces Are Valueless）</h2><p>你已经用关键字 <code>struct</code> 定义了你程序需要的值。还有另外一个关键字可以用来定义类型。那就是关键字 <code>interface</code>。</p>
+<h3 id="代码清单-5"><a href="#代码清单-5" class="headerlink" title="代码清单 5"></a>代码清单 5</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">05</span> <span class="keyword">type</span> reader <span class="keyword">interface</span> &#123;</span><br><span class="line"><span class="number">06</span>     read(b []<span class="keyword">byte</span>) (<span class="keyword">int</span>, error)</span><br><span class="line"><span class="number">07</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在代码清单 5 第 05 行，声明了一个 <code>interface</code> 的类型。<code>interface</code> 类型跟 <code>struct</code> 类型相对应。 <code>interface</code> 类型只能声明一组行为的方法。这意味着 <code>interface</code> 类型没有具体的值。</p>
+<h3 id="代码清单-6"><a href="#代码清单-6" class="headerlink" title="代码清单 6"></a>代码清单 6</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> r reader</span><br><span class="line"><span class="string">``</span><span class="string">` </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">有趣的是你可以声明一个 `</span><span class="keyword">interface</span><span class="string">` 类型的变量，就像代码清单 6 中展示的一样。这非常有趣，因为如果在 `</span><span class="keyword">interface</span><span class="string">` 中没有具体的值，那么变量 `</span>r<span class="string">` 似乎就是毫无意义的。`</span><span class="keyword">interface</span><span class="string">` 类型定义以及创建的值是毫无价值的！</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Boom！大脑爆炸了。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">这是一个非常重要的概念。你必须明白：</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">- 变量 `</span>r<span class="string">` 不代表任何东西。</span></span><br><span class="line"><span class="string">- 变量 `</span>r<span class="string">` 没有具体的值。</span></span><br><span class="line"><span class="string">- 变量 `</span>r<span class="string">` 毫无意义。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">有一个实现细节使得 r 在后台是真实存在的，但从我们的编程模型来看，它却是不存在的。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">当你认识到 `</span><span class="keyword">interface</span><span class="string">` 不是值类型，整个世界就变得清晰可以理解了。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">### 代码清单 7</span></span><br><span class="line"><span class="string">`</span><span class="string">``</span><span class="keyword">go</span></span><br><span class="line"><span class="number">37</span> <span class="function"><span class="keyword">func</span> <span class="title">retrieve</span><span class="params">(r reader)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="number">38</span>     data := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">100</span>)</span><br><span class="line"><span class="number">39</span></span><br><span class="line"><span class="number">40</span>     <span class="built_in">len</span>, err := r.read(data)</span><br><span class="line"><span class="number">41</span>     <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line"><span class="number">42</span>         <span class="keyword">return</span> err</span><br><span class="line"><span class="number">43</span>     &#125;</span><br><span class="line"><span class="number">44</span></span><br><span class="line"><span class="number">45</span>     fmt.Println(<span class="keyword">string</span>(data[:<span class="built_in">len</span>]))</span><br><span class="line"><span class="number">46</span>     <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line"><span class="number">47</span> &#125;</span><br><span class="line"><span class="string">``</span><span class="string">` </span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">在代码清单 7 定义了 `</span>retrieve<span class="string">` 函数，一个我称之为多态的函数。在我继续前，先说明一下，多态的定义是按顺序的。看下来自于 Basic 的发明人 Tom Kurtz 的定义，这个定义会让你觉得多态函数是如此的特别。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">“多态性意味着你写的一个特定的程序，它的行为会有所不同，而这取决于它所操作的数据。”</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">当我看到这个观点时，它总让我惊讶。它的简洁，却很好地说明了一点。多态性由具体的数据驱动。具有改变代码行为能力的是具体的数据。正如我以上所说的，你正在解决的问题是植根于具体的数据。面向数据设计是基于具体数据的。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">如果你不懂你正在使用的【具体】数据，你就不懂你想要解决的问题。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">Tom 的观点已经清楚地表明，具体的数据才是设计实现不同行为（多态性）抽象的关键。多么聪明的观点。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">再回到代码清单 7。我将在下面重复一遍。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">### 代码清单 7 - 复制</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span><span class="keyword">go</span></span><br><span class="line"><span class="number">37</span> <span class="function"><span class="keyword">func</span> <span class="title">retrieve</span><span class="params">(r reader)</span> <span class="title">error</span></span> &#123;</span><br><span class="line"><span class="number">38</span>     data := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">100</span>)</span><br><span class="line"><span class="number">39</span></span><br><span class="line"><span class="number">40</span>     <span class="built_in">len</span>, err := r.read(data)</span><br><span class="line"><span class="number">41</span>     <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line"><span class="number">42</span>         <span class="keyword">return</span> err</span><br><span class="line"><span class="number">43</span>     &#125;</span><br><span class="line"><span class="number">44</span></span><br><span class="line"><span class="number">45</span>     fmt.Println(<span class="keyword">string</span>(data[:<span class="built_in">len</span>]))</span><br><span class="line"><span class="number">46</span>     <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line"><span class="number">47</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>当你读到第 37 行的 retrieve 函数声明时，函数似乎在说，传递给我一个类型为 reader 的值。但你知道这不可能，因为根本就没有一个值的类型为 reader。类型为 reader 的值压根不存在，因为 reader 是一个接口类型。我们都知道接口不是值类型。</p>
+<p>那么函数到底想说什么？它想说的是：</p>
+<p>我会接受任何实现了 reader 接口的具体数据（任何值或者指针）。但它必须实现 reader 接口定义的所有方法。</p>
+<p>这就是你如何在 Go 中实现多态的方式。retrieve 函数不绑定到单个具体数据，而是绑定到任何实现 reader 接口的具体数据。</p>
+<h2 id="给数据赋予行为（Giving-Data-Behavior）"><a href="#给数据赋予行为（Giving-Data-Behavior）" class="headerlink" title="给数据赋予行为（Giving Data Behavior）"></a>给数据赋予行为（Giving Data Behavior）</h2><p>接下来的问题是，如何给数据赋予行为？这就是方法的用处。方法提供数据的行为机制。一旦数据有了行为方法，就可以实现多态。</p>
+<p>”多态意味着你写的一个确定的程序，但他的行为可能不同，而这依赖于它所操作的数据。“</p>
+<p>在 Go 中，你可以写函数和方法。选择方法而不是函数的一个原因是，数据被要求要实现给定接口的方法集。</p>
+<h3 id="代码清单-8"><a href="#代码清单-8" class="headerlink" title="代码清单 8"></a>代码清单 8</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">05</span> <span class="keyword">type</span> reader <span class="keyword">interface</span> &#123;</span><br><span class="line"><span class="number">06</span>     read(b []<span class="keyword">byte</span>) (<span class="keyword">int</span>, error)</span><br><span class="line"><span class="number">07</span> &#125;</span><br><span class="line"><span class="number">08</span></span><br><span class="line"><span class="number">09</span> <span class="keyword">type</span> file <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">10</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">11</span> &#125;</span><br><span class="line"><span class="number">12</span></span><br><span class="line"><span class="number">13</span> <span class="function"><span class="keyword">func</span> <span class="params">(file)</span> <span class="title">read</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span> &#123;</span><br><span class="line"><span class="number">14</span>     s := <span class="string">"&lt;rss&gt;&lt;channel&gt;&lt;title&gt;Going Go&lt;/title&gt;&lt;/channel&gt;&lt;/rss&gt;"</span></span><br><span class="line"><span class="number">15</span>     <span class="built_in">copy</span>(b, s)</span><br><span class="line"><span class="number">16</span>     <span class="keyword">return</span> <span class="built_in">len</span>(s), <span class="literal">nil</span></span><br><span class="line"><span class="number">17</span> &#125;</span><br><span class="line"><span class="number">18</span></span><br><span class="line"><span class="number">19</span> <span class="keyword">type</span> pipe <span class="keyword">struct</span> &#123;</span><br><span class="line"><span class="number">20</span>     name <span class="keyword">string</span></span><br><span class="line"><span class="number">21</span> &#125;</span><br><span class="line"><span class="number">22</span></span><br><span class="line"><span class="number">23</span> <span class="function"><span class="keyword">func</span> <span class="params">(pipe)</span> <span class="title">read</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span> &#123;</span><br><span class="line"><span class="number">24</span>     s := <span class="string">`&#123;name: "bill", title: "developer"&#125;`</span></span><br><span class="line"><span class="number">25</span>     <span class="built_in">copy</span>(b, s)</span><br><span class="line"><span class="number">26</span>     <span class="keyword">return</span> <span class="built_in">len</span>(s), <span class="literal">nil</span></span><br><span class="line"><span class="number">27</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>请注意：你可能注意在接收者的方法中的第 13 行和第 23 行，声明了但没有给一个变量具体的名字。这其实是惯例，如果这个方法不需要使用接收者的任何数据时就可以不给接收者一个具体的名字。</p>
+<p>在代码清单 8，在第 13 行，为类型 file 定义了一个方法，在第23 行，为 pipe 类型定义了一个方法。现在，每种类型都定义了一个名为 read 的方法，它已经实现了 reader 定义的所有方法。由于有了这些方法的定义，接下来我们可以说：</p>
+<p>“类型 file 和 pipe 现在已经实现了 reader 接口。”</p>
+<p>我在那段话中所说的每一句都很重要。如果你有看我之前关于值和指针语义的博客文章，那么你应该知道数据展现的行为由你正在使用的语义决定的。在这篇文章中我不会再讨论这些。这里有一个链接。</p>
+<p><a href="https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2017/06/design-philosophy-on-data-and-semantics.html</a></p>
+<p>一旦这些值，值和指针，实现了这些方法，它们就可以传递给多态函数 retrieve。</p>
+<h3 id="代码清单-9"><a href="#代码清单-9" class="headerlink" title="代码清单 9"></a>代码清单 9</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> reader <span class="keyword">interface</span> &#123;</span><br><span class="line">   read(b []<span class="keyword">byte</span>) (<span class="keyword">int</span>, error)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> file <span class="keyword">struct</span> &#123;</span><br><span class="line">   name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(file)</span> <span class="title">read</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span> &#123;</span><br><span class="line">   s := <span class="string">"&lt;rss&gt;&lt;channel&gt;&lt;title&gt;Going Go&lt;/title&gt;&lt;/channel&gt;&lt;/rss&gt;"</span></span><br><span class="line">   <span class="built_in">copy</span>(b, s)</span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">len</span>(s), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> pipe <span class="keyword">struct</span> &#123;</span><br><span class="line">   name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(pipe)</span> <span class="title">read</span><span class="params">(b []<span class="keyword">byte</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span> &#123;</span><br><span class="line">   s := <span class="string">`&#123;name: "bill", title: "developer"&#125;`</span></span><br><span class="line">   <span class="built_in">copy</span>(b, s)</span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">len</span>(s), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   f := file&#123;<span class="string">"data.json"</span>&#125;</span><br><span class="line">   p := pipe&#123;<span class="string">"cfg_service"</span>&#125;</span><br><span class="line"></span><br><span class="line">   retrieve(f)</span><br><span class="line">   retrieve(p)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">retrieve</span><span class="params">(r reader)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">   data := <span class="built_in">make</span>([]<span class="keyword">byte</span>, <span class="number">100</span>)</span><br><span class="line"></span><br><span class="line">   <span class="built_in">len</span>, err := r.read(data)</span><br><span class="line">   <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">       <span class="keyword">return</span> err</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   fmt.Println(<span class="keyword">string</span>(data[:<span class="built_in">len</span>]))</span><br><span class="line">   <span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码清单 9 在 Go 中提供了一个完整的多态实例，并很好的说明了接口不是值类型这个观点。retrieve 函数可以接受任何实现了 reader 接口的数据，任何值或者指针。这正是你在第 33 行和第 34 行的函数调用中可以看到的情况。</p>
+<p>现在，你可以看到 Go 中如何实现高级别的解耦，而且这种解耦还是非常地确切。你现在完全明白了数据的行为将传递为函数的行为。阅读代码时，这不再是陌生或无法理解的了。</p>
+<p>当你接受接口不是值类型的时候，这一切就都可以说得通。这个函数不是要求 reader 值，因为 reader 值根本不存在。该函数要求的是实现 reader 定义的方法的具体数据。</p>
+<h2 id="接口值的分配（Interface-Value-Assignments）"><a href="#接口值的分配（Interface-Value-Assignments）" class="headerlink" title="接口值的分配（Interface Value Assignments）"></a>接口值的分配（Interface Value Assignments）</h2><p>接口不是值类型的观点可以延伸到接口值的分配。看下这些接口类型。</p>
+<h3 id="代码清单-10"><a href="#代码清单-10" class="headerlink" title="代码清单 10"></a>代码清单 10</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">05</span> <span class="keyword">type</span> Reader <span class="keyword">interface</span> &#123;</span><br><span class="line"><span class="number">06</span>     Read()</span><br><span class="line"><span class="number">07</span> &#125;</span><br><span class="line"><span class="number">08</span></span><br><span class="line"><span class="number">09</span> <span class="keyword">type</span> Writer <span class="keyword">interface</span> &#123;</span><br><span class="line"><span class="number">10</span>     Write()</span><br><span class="line"><span class="number">11</span> &#125;</span><br><span class="line"><span class="number">12</span></span><br><span class="line"><span class="number">13</span> <span class="keyword">type</span> ReadWriter <span class="keyword">interface</span> &#123;</span><br><span class="line"><span class="number">14</span>     Reader</span><br><span class="line"><span class="number">15</span>     Writer</span><br><span class="line"><span class="number">16</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>有了这些接口声明，你可以实现一个实现了所有这三个接口的具体类型。</p>
+<h3 id="代码清单-11"><a href="#代码清单-11" class="headerlink" title="代码清单 11"></a>代码清单 11</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">18</span> <span class="keyword">type</span> system <span class="keyword">struct</span>&#123;</span><br><span class="line"><span class="number">19</span>     Host <span class="keyword">string</span></span><br><span class="line"><span class="number">20</span> &#125;</span><br><span class="line"><span class="number">21</span></span><br><span class="line"><span class="number">22</span> <span class="function"><span class="keyword">func</span> <span class="params">(*system)</span> <span class="title">Read</span><span class="params">()</span></span>  &#123; <span class="comment">/* ... */</span> &#125;</span><br><span class="line"><span class="number">23</span> <span class="function"><span class="keyword">func</span> <span class="params">(*system)</span> <span class="title">Write</span><span class="params">()</span></span> &#123; <span class="comment">/* ... */</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面，你可以再一次确认，接口为何不是值类型。</p>
+<h3 id="代码清单-12"><a href="#代码清单-12" class="headerlink" title="代码清单 12"></a>代码清单 12</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">25 func main() &#123;</span><br><span class="line">26     var rw ReadWriter &#x3D; &amp;system&#123;&quot;127.0.0.1&quot;&#125;</span><br><span class="line">27     var r Reader &#x3D; rw</span><br><span class="line">28     fmt.Println(rw, r)</span><br><span class="line">29 &#125;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F; OUTPUT</span><br><span class="line">&amp;&#123;127.0.0.1&#125; &amp;&#123;127.0.0.1&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码清单 12 的第 26 行，声明了一个类型为 ReadWriter，名字为 rw 的变量，并分配了一段具体的数据。具体数据是一个指向 system 的指针。然后在第 27 行中定义了类型为 Reader，名称为 r 的变量。有一个赋值操作跟这个声明相关。接口类型为 ReadWriter 的 rw 变量分配给了接口类型为 Reader 的新变量 r。</p>
+<p>这应该会导致我们暂停一秒，因为变量 rw 和 r 的类型不同。我们知道在 Go 中两个不同名称的类型之间不会进行隐式地转换。但这还跟我们这种情况不一样。因为这些变量不是具体的值类型，它们是接口类型。</p>
+<p>如果我们回到接口不是值类型的理解上，那么 rw 和 r 就都不是具体的值。因此，代码不能将接口值分配给对方。它唯一可以分配的是存储在接口值中的具体数据。幸亏有接口的类型声明，编译器可以验证一个接口内部的具体数据是否也满足另外的接口。</p>
+<p>最后，我们只能处理具体的数据。处理接口值时，我们仍然只能处理存储在其中的具体数据。当你将接口值传递给 fmt 包进行显示时，请记住具体的数据就是显示的内容。再一次强调，他是唯一真实的东西。</p>
+<h2 id="结论（Conclusion）"><a href="#结论（Conclusion）" class="headerlink" title="结论（Conclusion）"></a>结论（Conclusion）</h2><p>我希望这篇文章能给你提供一种思考接口以及如何设计代码的不同方式的参考。我相信，一旦你摆脱了实现细节，并专注于接口与具体数据之间的关系，那么事情就会变得更加合理。面向数据的设计是编写更好的算法的方式，但要求关注对行为的解耦。接口允许通过调用具体数据的方法来达到行为的解耦。</p>
+<hr>
+<p>via: <a href="https://www.ardanlabs.com/blog/2018/03/interface-values-are-valueless.html" target="_blank" rel="noopener">https://www.ardanlabs.com/blog/2018/03/interface-values-are-valueless.html</a></p>
+<p>作者：<a href="https://github.com/ardanlabs/gotraining" target="_blank" rel="noopener">William Kennedy</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/polaris1119" target="_blank" rel="noopener">polaris1119</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/" rel="tag"># 翻译文章</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91%E5%B0%8F%E5%87%BD%E6%95%B0%E5%8F%AF%E8%83%BD%E6%98%AF%E6%9C%89%E5%AE%B3%E7%9A%84/" rel="next" title="【译】小函数可能是有害的">
+                <i class="fa fa-chevron-left"></i> 【译】小函数可能是有害的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91Golang-%E6%95%B0%E6%8D%AE%E5%BA%93-mocks/" rel="prev" title="【译】Golang 数据库 mocks">
+                【译】Golang 数据库 mocks <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/header.jpg"
+                alt="Gogeof" />
+            
+              <p class="site-author-name" itemprop="name">Gogeof</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/gogeof" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="miancai.li@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍（Introduction）"><span class="nav-number">1.</span> <span class="nav-text">介绍（Introduction）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#面向数据设计（Data-Oriented-Design）"><span class="nav-number">2.</span> <span class="nav-text">面向数据设计（Data Oriented Design）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体数据（Concrete-Data）"><span class="nav-number">3.</span> <span class="nav-text">具体数据（Concrete Data）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-1"><span class="nav-number">3.1.</span> <span class="nav-text">代码清单 1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-2"><span class="nav-number">3.2.</span> <span class="nav-text">代码清单 2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-3"><span class="nav-number">3.3.</span> <span class="nav-text">代码清单 3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-4"><span class="nav-number">3.4.</span> <span class="nav-text">代码清单 4</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接口值不是值类型（Interfaces-Are-Valueless）"><span class="nav-number">4.</span> <span class="nav-text">接口值不是值类型（Interfaces Are Valueless）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-5"><span class="nav-number">4.1.</span> <span class="nav-text">代码清单 5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-6"><span class="nav-number">4.2.</span> <span class="nav-text">代码清单 6</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#给数据赋予行为（Giving-Data-Behavior）"><span class="nav-number">5.</span> <span class="nav-text">给数据赋予行为（Giving Data Behavior）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-8"><span class="nav-number">5.1.</span> <span class="nav-text">代码清单 8</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-9"><span class="nav-number">5.2.</span> <span class="nav-text">代码清单 9</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接口值的分配（Interface-Value-Assignments）"><span class="nav-number">6.</span> <span class="nav-text">接口值的分配（Interface Value Assignments）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-10"><span class="nav-number">6.1.</span> <span class="nav-text">代码清单 10</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-11"><span class="nav-number">6.2.</span> <span class="nav-text">代码清单 11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码清单-12"><span class="nav-number">6.3.</span> <span class="nav-text">代码清单 12</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论（Conclusion）"><span class="nav-number">7.</span> <span class="nav-text">结论（Conclusion）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gogeof</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">41.8k</span>
+  
+</div>
+
+<!-- modify by me -->
+<!--
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">Hosted by <a target="_blank" href="https://github.com/gogeof">GitHub Pages</a></div>
+
+-->
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

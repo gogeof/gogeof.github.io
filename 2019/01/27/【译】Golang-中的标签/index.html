@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="翻译文章," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="结构体字段的声明可以通过之后放置的文字来标记。标签添加由当前包或外部包使用的元信息。让我们首先回首一下 strcut 声明的样子，然后我们将扔出几个用例，深入研究这个标签。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】Golang 中的标签">
+<meta property="og:url" content="http://yoursite.com/2019/01/27/%E3%80%90%E8%AF%91%E3%80%91Golang-%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/index.html">
+<meta property="og:site_name" content="分享">
+<meta property="og:description" content="结构体字段的声明可以通过之后放置的文字来标记。标签添加由当前包或外部包使用的元信息。让我们首先回首一下 strcut 声明的样子，然后我们将扔出几个用例，深入研究这个标签。">
+<meta property="article:published_time" content="2019-01-27T14:06:54.000Z">
+<meta property="article:modified_time" content="2020-05-02T14:07:56.068Z">
+<meta property="article:author" content="Gogeof">
+<meta property="article:tag" content="翻译文章">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/27/【译】Golang-中的标签/"/>
+
+
+
+
+
+  <title>【译】Golang 中的标签 | 分享</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="分享" type="application/atom+xml">
+</head>
+
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta custom-logo">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">分享</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/27/%E3%80%90%E8%AF%91%E3%80%91Golang-%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gogeof">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="分享">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【译】Golang 中的标签</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-27T22:06:54+08:00">
+                2019-01-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1.6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>结构体字段的声明可以通过之后放置的文字来标记。标签添加由当前包或外部包使用的元信息。让我们首先回首一下 strcut 声明的样子，然后我们将扔出几个用例，深入研究这个标签。</p>
+<a id="more"></a>
+
+<h2 id="结构体类型（Struct-type）"><a href="#结构体类型（Struct-type）" class="headerlink" title="结构体类型（Struct type）"></a>结构体类型（Struct type）</h2><p>Struct 是一系列字段。每个字段由可选名称和所需类型（<a href="https://play.golang.org/p/q2V_op8_SJk" target="_blank" rel="noopener">源代码</a>）组成：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">    T1</span><br><span class="line">    f2     <span class="keyword">int64</span></span><br><span class="line">    f3, f4 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T2&#123;T1&#123;<span class="string">"foo"</span>&#125;, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    fmt.Println(t.f1)    <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.T1.f1) <span class="comment">// foo</span></span><br><span class="line">    fmt.Println(t.f2)    <span class="comment">// 1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>T1 域被称为嵌入字段，因为它是用类型声明但没有名称。</p>
+<p>字段声明可以在 T2 中指定来自第 3 个字段声明的 f3 和 f4 之类的多个标识符。</p>
+<p>语言规范声明每个字段声明后面跟着分号，但正如我们上面所见，它可以省略。如果需要将多个字段声明放入同一行（源代码），分号可能很有用（<a href="https://play.golang.org/p/nTTgVX7BqV8" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">int64</span>; f2 <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">2</span>&#125;</span><br><span class="line">    fmt.Println(t.f1, t.f2)  <span class="comment">// 1 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="标签（Tag）"><a href="#标签（Tag）" class="headerlink" title="标签（Tag）"></a>标签（Tag）</h2><p>字段声明后面可以跟一个可选的字符串文字（标记），它称为相应字段声明中所有字段的属性（单字段声明可以指定多个标识符）。让我们看看它的实际应用（<a href="https://play.golang.org/p/BubxnOxpOcM" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以使用原始字符串文字或解释的字符串文字，但下面描述的传统格式需要原始字符串文字。<a href="https://golang.org/ref/spec#String_literals" target="_blank" rel="noopener">规范</a>中描述了原始字符串文字和解释字符串文字之间的差异。</p>
+<p>如果字段声明包含多个标识符，则标记将附加到字段声明的所有字段（如上面的字段 f4 和 f5）。</p>
+<h2 id="反射（Reflection）"><a href="#反射（Reflection）" class="headerlink" title="反射（Reflection）"></a>反射（Reflection）</h2><p>标签可通过 reflect 包访问，允许运行时反射（<a href="https://play.golang.org/p/YYEAfGc6iaE" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">    <span class="string">"reflect"</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1     <span class="keyword">string</span> <span class="string">"f one"</span></span><br><span class="line">    f2     <span class="keyword">string</span></span><br><span class="line">    f3     <span class="keyword">string</span> <span class="string">`f three`</span></span><br><span class="line">    f4, f5 <span class="keyword">int64</span>  <span class="string">`f four and five`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Println(f1.Tag) <span class="comment">// f one</span></span><br><span class="line">    f4, _ := t.FieldByName(<span class="string">"f4"</span>)</span><br><span class="line">    fmt.Println(f4.Tag) <span class="comment">// f four and five</span></span><br><span class="line">    f5, _ := t.FieldByName(<span class="string">"f5"</span>)</span><br><span class="line">    fmt.Println(f5.Tag) <span class="comment">// f four and five</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>设置空标记与完全不使用标记的效果相同（<a href="https://play.golang.org/p/u5VUMXz01cJ" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f1 <span class="keyword">string</span> <span class="string">``</span></span><br><span class="line">    f2 <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f1, _ := t.FieldByName(<span class="string">"f1"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f1.Tag) <span class="comment">// ""</span></span><br><span class="line">    f2, _ := t.FieldByName(<span class="string">"f2"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%q\n"</span>, f2.Tag) <span class="comment">// ""</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="常规格式（Conventional-format）"><a href="#常规格式（Conventional-format）" class="headerlink" title="常规格式（Conventional format）"></a>常规格式（Conventional format）</h2><p>在提交中引入“反射：支持多个包使用结构标记”允许为每个包设置元信息。这提供了简单的命名空间。标签被格式化为键的串联：“值”对。密钥可能是像 json 这样的包的名称。对可以选择用空格分隔 - key1:“ value1” key2: “value2” key3: “value3”。 如果使用传统格式，那么我们可以使用两种 struct tag （StructTag）方法 - Get 或 Lookup。它们允许返回与所需键内部标记相关联的值。</p>
+<p>Lookup 函数返回两个值 - 与键关联的值（如果未设置则为空）和 bool，指示是否已找到键（<a href="https://play.golang.org/p/i2Vh3tfN3A5" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">`one:"1" two:"2"blank:""`</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1" two:"2"blank:""</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"blank"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , true</span></span><br><span class="line">    v, ok = f.Tag.Lookup(<span class="string">"five"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Get 方法只是 Lookup 简单的包封装器，它丢弃了 bool 值（<a href="https://github.com/golang/go/blob/1b1c8b34d129eefcdbad234914df999581e62b2f/src/reflect/type.go#L1163" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(tag StructTag)</span> <span class="title">Get</span><span class="params">(key <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">    v, _ := tag.Lookup(key)</span><br><span class="line">    <span class="keyword">return</span> v</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果标签不是常规模式，则不指定 Get 或 Lookup 的返回值。</p>
+<p>即使 tag 是任何字符串值（不管是释义或原始值），只有在双引号（<a href="">源代码</a>）之间包含值时，Lookup 和 Get 方法才会找到 key 的值：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:`1`"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:`1`</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// , false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以在解释的字符串值中使用转义双引号（<a href="https://play.golang.org/p/o5APz18OH6e" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one:\"1\""</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    t := reflect.TypeOf(T&#123;&#125;)</span><br><span class="line">    f, _ := t.FieldByName(<span class="string">"f"</span>)</span><br><span class="line">    fmt.Println(f.Tag) <span class="comment">// one:"1"</span></span><br><span class="line">    v, ok := f.Tag.Lookup(<span class="string">"one"</span>)</span><br><span class="line">    fmt.Printf(<span class="string">"%s, %t\n"</span>, v, ok) <span class="comment">// 1, true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但可读性就要低很多。</p>
+<h2 id="结论（Conversion）"><a href="#结论（Conversion）" class="headerlink" title="结论（Conversion）"></a>结论（Conversion）</h2><p>将结构体类型转换为其他类型要求底层类型相同，但忽略掉 tag（<a href="https://play.golang.org/p/C7M0bVwYFK2" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> T1 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"foo"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> <span class="keyword">type</span> T2 <span class="keyword">struct</span> &#123;</span><br><span class="line">     f <span class="keyword">int</span> <span class="string">`json:"bar"`</span></span><br><span class="line"> &#125;</span><br><span class="line"> t1 := T1&#123;<span class="number">10</span>&#125;</span><br><span class="line"> <span class="keyword">var</span> t2 T2</span><br><span class="line"> t2 = T2(t1)</span><br><span class="line"> fmt.Println(t2) <span class="comment">// &#123;10&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>Go 1.8 （提案）中引入了此行为。在 Go 1.7 及更早版本的代码中，可能会抛出编译时错误。</p>
+<h2 id="用例（Use-cases）"><a href="#用例（Use-cases）" class="headerlink" title="用例（Use cases）"></a>用例（Use cases）</h2><h3 id="Un-marshaling"><a href="#Un-marshaling" class="headerlink" title="(Un)marshaling"></a>(Un)marshaling</h3><p>Go 中标签最常见的用途可能是编组。让我们看一下来自 json 包的函数 Marshal 如何使用它（<a href="https://play.golang.org/p/C1hAMXTKPM_S" target="_blank" rel="noopener">源代码</a>）：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">"encoding/json"</span></span><br><span class="line">    <span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">       F1 <span class="keyword">int</span> <span class="string">`json:"f_1"`</span></span><br><span class="line">       F2 <span class="keyword">int</span> <span class="string">`json:"f_2,omitempty"`</span></span><br><span class="line">       F3 <span class="keyword">int</span> <span class="string">`json:"f_3,omitempty"`</span></span><br><span class="line">       F4 <span class="keyword">int</span> <span class="string">`json:"-"`</span></span><br><span class="line">    &#125;</span><br><span class="line">    t := T&#123;<span class="number">1</span>, <span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>&#125;</span><br><span class="line">    b, err := json.Marshal(t)</span><br><span class="line">    <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">        <span class="built_in">panic</span>(err)</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Printf(<span class="string">"%s\n"</span>, b) <span class="comment">// &#123;"f_1":1,"f_3":2&#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>xml 包也利用了标签 - <a href="https://golang.org/pkg/encoding/xml/#MarshalIndent" target="_blank" rel="noopener">https://golang.org/pkg/encoding/xml/#MarshalIndent</a>.</p>
+<h2 id="ORM"><a href="#ORM" class="headerlink" title="ORM"></a>ORM</h2><p>像 GORM 这样的对象关系映射工具，也广泛使用标签 - <a href="https://github.com/jinzhu/gorm/blob/58e34726dfc069b558038efbaa25555f182d1f7a/multi_primary_keys_test.go#L10" target="_blank" rel="noopener">例子</a>.</p>
+<h2 id="摘要数据（Digesting-forms-data）"><a href="#摘要数据（Digesting-forms-data）" class="headerlink" title="摘要数据（Digesting forms data）"></a>摘要数据（Digesting forms data）</h2><p><a href="https://godoc.org/github.com/gorilla/schema" target="_blank" rel="noopener">https://godoc.org/github.com/gorilla/schema</a></p>
+<h2 id="其他（Other）"><a href="#其他（Other）" class="headerlink" title="其他（Other）"></a>其他（Other）</h2><p>标签的更多潜在用例，如配置管理，结构的默认值，验证，命令行参数描述等（<a href="https://github.com/golang/go/wiki/Well-known-struct-tags" target="_blank" rel="noopener">众所周知的结构标记列表</a>）。</p>
+<h2 id="go-vet"><a href="#go-vet" class="headerlink" title="go vet"></a>go vet</h2><p>Go 编译器没有强制执行传统的 struct 标签格式，但是 vet 就是这样做的，所以值得使用它，例如作为 CI 管道的一部分。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"><span class="keyword">type</span> T <span class="keyword">struct</span> &#123;</span><br><span class="line">    f <span class="keyword">string</span> <span class="string">"one two three"</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;&#125;</span><br><span class="line">&gt; <span class="keyword">go</span> vet tags.<span class="keyword">go</span></span><br><span class="line">tags.<span class="keyword">go</span>:<span class="number">4</span>: <span class="keyword">struct</span> field tag <span class="string">`one two three`</span> not compatible with reflect.StructTag.Get: bad syntax <span class="keyword">for</span> <span class="keyword">struct</span> tag pair</span><br></pre></td></tr></table></figure>
+
+<p>…</p>
+<p>由于 struct 标签，程序员可以从单一来源中受益。Go 是一种使用语言，所以即使可以使用专用数据结构等其他方式来控制整个过程来解决 JSON/XML 编码，Golang 也能让软件工程师的生活变得更轻松。值得一提的是，标签的长度不受规格的限制。</p>
+<hr>
+<p>via: <a href="https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e" target="_blank" rel="noopener">https://medium.com/golangspec/tags-in-golang-3e5db0b8ef3e</a></p>
+<p>作者：<a href="https://medium.com/@mlowicki" target="_blank" rel="noopener">Michał Łowicki</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/" rel="tag"># 翻译文章</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/05/%E3%80%90%E8%AF%91%E3%80%91Go-GC/" rel="next" title="【译】Go GC">
+                <i class="fa fa-chevron-left"></i> 【译】Go GC
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/header.jpg"
+                alt="Gogeof" />
+            
+              <p class="site-author-name" itemprop="name">Gogeof</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/gogeof" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="miancai.li@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#结构体类型（Struct-type）"><span class="nav-number">1.</span> <span class="nav-text">结构体类型（Struct type）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#标签（Tag）"><span class="nav-number">2.</span> <span class="nav-text">标签（Tag）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反射（Reflection）"><span class="nav-number">3.</span> <span class="nav-text">反射（Reflection）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常规格式（Conventional-format）"><span class="nav-number">4.</span> <span class="nav-text">常规格式（Conventional format）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论（Conversion）"><span class="nav-number">5.</span> <span class="nav-text">结论（Conversion）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用例（Use-cases）"><span class="nav-number">6.</span> <span class="nav-text">用例（Use cases）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Un-marshaling"><span class="nav-number">6.1.</span> <span class="nav-text">(Un)marshaling</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ORM"><span class="nav-number">7.</span> <span class="nav-text">ORM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要数据（Digesting-forms-data）"><span class="nav-number">8.</span> <span class="nav-text">摘要数据（Digesting forms data）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他（Other）"><span class="nav-number">9.</span> <span class="nav-text">其他（Other）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#go-vet"><span class="nav-number">10.</span> <span class="nav-text">go vet</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gogeof</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">41.8k</span>
+  
+</div>
+
+<!-- modify by me -->
+<!--
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">Hosted by <a target="_blank" href="https://github.com/gogeof">GitHub Pages</a></div>
+
+-->
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

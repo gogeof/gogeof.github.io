@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="翻译文章," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在构建 Web 应用时，可能需要为许多（甚至全部）HTTP 请求运行一些公共的函数。你可能需要对每个请求进行记录，对每个响应进行压缩，或者在执行一些重要的处理之前检查一下缓存。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【译】创建和使用 HTTP 中间层">
+<meta property="og:url" content="http://yoursite.com/2018/04/30/%E3%80%90%E8%AF%91%E3%80%91%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8-HTTP-%E4%B8%AD%E9%97%B4%E5%B1%82/index.html">
+<meta property="og:site_name" content="分享">
+<meta property="og:description" content="在构建 Web 应用时，可能需要为许多（甚至全部）HTTP 请求运行一些公共的函数。你可能需要对每个请求进行记录，对每个响应进行压缩，或者在执行一些重要的处理之前检查一下缓存。">
+<meta property="article:published_time" content="2018-04-30T14:01:26.000Z">
+<meta property="article:modified_time" content="2020-05-02T14:08:57.895Z">
+<meta property="article:author" content="Gogeof">
+<meta property="article:tag" content="翻译文章">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/04/30/【译】创建和使用-HTTP-中间层/"/>
+
+
+
+
+
+  <title>【译】创建和使用 HTTP 中间层 | 分享</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 4.2.0"><link rel="alternate" href="/atom.xml" title="分享" type="application/atom+xml">
+</head>
+
+<script type="text/javascript" src="//cdn.bootcss.com/canvas-nest.js/1.0.0/canvas-nest.min.js"></script>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta custom-logo">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">分享</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/30/%E3%80%90%E8%AF%91%E3%80%91%E5%88%9B%E5%BB%BA%E5%92%8C%E4%BD%BF%E7%94%A8-HTTP-%E4%B8%AD%E9%97%B4%E5%B1%82/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Gogeof">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/header.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="分享">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【译】创建和使用 HTTP 中间层</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-30T22:01:26+08:00">
+                2018-04-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2.6k
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  11
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在构建 Web 应用时，可能需要为许多（甚至全部）HTTP 请求运行一些公共的函数。你可能需要对每个请求进行记录，对每个响应进行压缩，或者在执行一些重要的处理之前检查一下缓存。</p>
+<a id="more"></a>
+
+<p>组织这种公共函数的一种方法是将其设置为中间层 - 自包含代码，它们在正常应用处理程序之前或之后，独立地处理请求。在 Go 中，使用中间层的常见位置在 ServeMux 和应用程序处理之间，因此通常对 HTTP 请求的控制流程如下所示：</p>
+<p><code>ServeMux =&gt; Middleware Handler =&gt; Application Handler</code></p>
+<p>在这篇文章中，我将解释如何使自定义中间层在这种模式下工作，以及如何使用第三方中间层包的一些具体的示例。</p>
+<h2 id="基本原则（The-Basic-Principles）"><a href="#基本原则（The-Basic-Principles）" class="headerlink" title="基本原则（The Basic Principles）"></a>基本原则（The Basic Principles）</h2><p>在 Go 中制作和使用中间层很简单。我们可以设想：</p>
+<p>实现我们自己的中间层，使其满足 http.Handler 接口。<br>构建一个包含我们的中间层处理程序和我们的普通应用处理程序的处理链，我们可以使用它来注册 http.ServeMux。我会解释如何做。</p>
+<p>希望你已经熟悉下面构造一个处理程序的方法（如果没有，最好在继续阅读前，看下这个底层的程序）。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">messageHandler</span><span class="params">(message <span class="keyword">string</span>)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    w.Write([]<span class="keyword">byte</span>(message)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个处理程序中，我们将我们的逻辑（一个简单的 <code>w.Write</code>）放在匿名函数中，并封装 <code>message</code> 变量以形成闭包。然后我们使用 http.HandlerFunc 适配器并将其返回，将此闭包转换为处理程序。</p>
+<p>我们可以使用这种相同的方法来创建一系列的处理程序。我们将链中的下一个处理程序作为变量传递给闭包（而不是像上面那样），然后通过调用 ServeHTTP() 方法将控制权转移给下一个处理程序。</p>
+<p>这为我们提供了构建中间层的完整的模式：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">exampleMiddleware</span><span class="params">(next http.Handler)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Our middleware logic goes here...</span></span><br><span class="line">    next.ServeHTTP(w, r)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你会注意到这个中间层函数有一个  <code>func (http.Handler) http.Handler</code> 签名。它接受一个处理程序作为参数并返回一个处理程序。这是有用的，原因有两个：</p>
+<p>因为它返回一个处理程序，我们可以直接使用 net/http 软件包提供的标准 ServeMux 注册中间层函数。<br>通过将中间层函数嵌套在一起，我们可以创建一个任意长的处理程序链。例如：</p>
+<p><code>http.Handle(&quot;/&quot;, middlewareOne(middlewareTwo(finalHandler)))</code></p>
+<h2 id="控制流程说明（Illustrating-the-Flow-of-Control）"><a href="#控制流程说明（Illustrating-the-Flow-of-Control）" class="headerlink" title="控制流程说明（Illustrating the Flow of Control）"></a>控制流程说明（Illustrating the Flow of Control）</h2><p>让我们看一个简单的例子，它带有一些只需将日志消息写入标准输出的中间层函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File: main.go</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"log"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">middlewareOne</span><span class="params">(next http.Handler)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    log.Println(<span class="string">"Executing middlewareOne"</span>)</span><br><span class="line">    next.ServeHTTP(w, r)</span><br><span class="line">    log.Println(<span class="string">"Executing middlewareOne again"</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">middlewareTwo</span><span class="params">(next http.Handler)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    log.Println(<span class="string">"Executing middlewareTwo"</span>)</span><br><span class="line">    <span class="keyword">if</span> r.URL.Path != <span class="string">"/"</span> &#123;</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    next.ServeHTTP(w, r)</span><br><span class="line">    log.Println(<span class="string">"Executing middlewareTwo again"</span>)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">final</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  log.Println(<span class="string">"Executing finalHandler"</span>)</span><br><span class="line">  w.Write([]<span class="keyword">byte</span>(<span class="string">"OK"</span>))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  finalHandler := http.HandlerFunc(final)</span><br><span class="line"></span><br><span class="line">  http.Handle(<span class="string">"/"</span>, middlewareOne(middlewareTwo(finalHandler)))</span><br><span class="line">  http.ListenAndServe(<span class="string">":3000"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行这个应用程序并向 <code>http://localhost:3000</code> 发出请求。你应该会得到这样的日志输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ go run main.go</span><br><span class="line">2014&#x2F;10&#x2F;13 20:27:36 Executing middlewareOne</span><br><span class="line">2014&#x2F;10&#x2F;13 20:27:36 Executing middlewareTwo</span><br><span class="line">2014&#x2F;10&#x2F;13 20:27:36 Executing finalHandler</span><br><span class="line">2014&#x2F;10&#x2F;13 20:27:36 Executing middlewareTwo again</span><br><span class="line">2014&#x2F;10&#x2F;13 20:27:36 Executing middlewareOne again</span><br></pre></td></tr></table></figure>
+
+<p>很明显，可以看到如何通过处理程序链按照嵌套顺序传递控制权，然后再以相反的方向返回。</p>
+<p>任何时候，我们都可以通过在中间层处理程序中返回，来停止链传递的控件。</p>
+<p>在上面的例子中，我在中间层中包含了一个条件返回函数。通过访问 <code>http://localhost:3000/foo</code> 再次尝试，并检查日志 - 你会发现此次请求不会通过中间层进一步传递到备份链。</p>
+<h2 id="通过一个合适的例子来了解如何？（Understood-How-About-a-Proper-Example-）"><a href="#通过一个合适的例子来了解如何？（Understood-How-About-a-Proper-Example-）" class="headerlink" title="通过一个合适的例子来了解如何？（Understood. How About a Proper Example?）"></a>通过一个合适的例子来了解如何？（Understood. How About a Proper Example?）</h2><p>好了。假设我们正在构建一个处理正文中包含 XML 请求的服务。我们想要创建一些中间层，它们 a）检查请求体是否存在，b）嗅探以确保它是 XML（格式）。如果其中任何一项检查失败，我们希望我们的中间层写入错误消息并停止将请求传递给我们的应用处理程序。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File: main.go</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"bytes"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">enforceXMLHandler</span><span class="params">(next http.Handler)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  <span class="keyword">return</span> http.HandlerFunc(<span class="function"><span class="keyword">func</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">    <span class="comment">// Check for a request body</span></span><br><span class="line">    <span class="keyword">if</span> r.ContentLength == <span class="number">0</span> &#123;</span><br><span class="line">      http.Error(w, http.StatusText(<span class="number">400</span>), <span class="number">400</span>)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Check its MIME type</span></span><br><span class="line">    buf := <span class="built_in">new</span>(bytes.Buffer)</span><br><span class="line">    buf.ReadFrom(r.Body)</span><br><span class="line">    <span class="keyword">if</span> http.DetectContentType(buf.Bytes()) != <span class="string">"text/xml; charset=utf-8"</span> &#123;</span><br><span class="line">      http.Error(w, http.StatusText(<span class="number">415</span>), <span class="number">415</span>)</span><br><span class="line">      <span class="keyword">return</span></span><br><span class="line">    &#125;</span><br><span class="line">    next.ServeHTTP(w, r)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  finalHandler := http.HandlerFunc(final)</span><br><span class="line"></span><br><span class="line">  http.Handle(<span class="string">"/"</span>, enforceXMLHandler(finalHandler))</span><br><span class="line">  http.ListenAndServe(<span class="string">":3000"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">final</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  w.Write([]<span class="keyword">byte</span>(<span class="string">"OK"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这看起来不错。我们通过创建一个简单的 XML 文件来测试它：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ cat &gt; books.xml</span><br><span class="line">&lt;?xml version&#x3D;&quot;1.0&quot;?&gt;</span><br><span class="line">&lt;books&gt;</span><br><span class="line">  &lt;book&gt;</span><br><span class="line">    &lt;author&gt;H. G. Wells&lt;&#x2F;author&gt;</span><br><span class="line">    &lt;title&gt;The Time Machine&lt;&#x2F;title&gt;</span><br><span class="line">    &lt;price&gt;8.50&lt;&#x2F;price&gt;</span><br><span class="line">  &lt;&#x2F;book&gt;</span><br><span class="line">&lt;&#x2F;books&gt;</span><br></pre></td></tr></table></figure>
+
+<p>并使用 curl 命令发出一些请求：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ curl -i localhost:3000</span><br><span class="line">HTTP&#x2F;1.1 400 Bad Request</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;utf-8</span><br><span class="line">Content-Length: 12</span><br><span class="line"></span><br><span class="line">Bad Request</span><br><span class="line">$ curl -i -d &quot;This is not XML&quot; localhost:3000</span><br><span class="line">HTTP&#x2F;1.1 415 Unsupported Media Type</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;utf-8</span><br><span class="line">Content-Length: 23</span><br><span class="line"></span><br><span class="line">Unsupported Media Type</span><br><span class="line">$ curl -i -d @books.xml localhost:3000</span><br><span class="line">HTTP&#x2F;1.1 200 OK</span><br><span class="line">Date: Fri, 17 Oct 2014 13:42:10 GMT</span><br><span class="line">Content-Length: 2</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;utf-8</span><br><span class="line"></span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用第三方中间层（Using-Third-Party-Middleware）"><a href="#使用第三方中间层（Using-Third-Party-Middleware）" class="headerlink" title="使用第三方中间层（Using Third-Party Middleware）"></a>使用第三方中间层（Using Third-Party Middleware）</h2><p>基本上你想直接使用第三方软件包而不是自己写中间层。我们将在这里看到一对（第三方软件包）：<a href="http://elithrar.github.io/article/httpauth-basic-auth-for-go/" target="_blank" rel="noopener">goji/httpauth</a> 和 Gorilla 的 <a href="http://www.gorillatoolkit.org/pkg/handlers#LoggingHandler" target="_blank" rel="noopener">LoggingHandler</a>。</p>
+<p>goji/httpauth 包提供了 HTTP 基本的认证功能。它有一个 <a href="https://godoc.org/github.com/goji/httpauth#SimpleBasicAuth" target="_blank" rel="noopener">SimpleBasicAuth</a> helper，它返回一个带有签名的 <code>func (http.Handler) http.Handler</code> 函数。这意味着我们可以像我们定制的中间层一样（的方式）使用它。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ go get github.com&#x2F;goji&#x2F;httpauth</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File: main.go</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/goji/httpauth"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  finalHandler := http.HandlerFunc(final)</span><br><span class="line">  authHandler := httpauth.SimpleBasicAuth(<span class="string">"username"</span>, <span class="string">"password"</span>)</span><br><span class="line"></span><br><span class="line">  http.Handle(<span class="string">"/"</span>, authHandler(finalHandler))</span><br><span class="line">  http.ListenAndServe(<span class="string">":3000"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">final</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  w.Write([]<span class="keyword">byte</span>(<span class="string">"OK"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果你运行这个例子，你应该得到你对有效和无效凭证所期望的回应：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ curl -i username:password@localhost:3000</span><br><span class="line">HTTP&#x2F;1.1 200 OK</span><br><span class="line">Content-Length: 2</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;utf-8</span><br><span class="line"></span><br><span class="line">OK</span><br><span class="line">$ curl -i username:wrongpassword@localhost:3000</span><br><span class="line">HTTP&#x2F;1.1 401 Unauthorized</span><br><span class="line">Content-Type: text&#x2F;plain; charset&#x3D;utf-8</span><br><span class="line">Www-Authenticate: Basic realm&#x3D;&quot;&quot;Restricted&quot;&quot;</span><br><span class="line">Content-Length: 13</span><br><span class="line"></span><br><span class="line">Unauthorized</span><br></pre></td></tr></table></figure>
+
+<p>Gorilla 的 LoggingHandler - 它记录了 <a href="http://httpd.apache.org/docs/1.3/logs.html#common" target="_blank" rel="noopener">Apache 风格的日志</a> - 有点不一样。</p>
+<p>它使用签名 <code>func(out io.Writer, h http.Handler) http.Handler</code>，所以它不仅需要下一个处理程序，还需要将日志写入的 io.Writer。</p>
+<p>以下是一个简单的例子，我们将日志写入 <code>server.log</code> 文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get github.com/gorilla/handlers</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File: main.go</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"github.com/gorilla/handlers"</span></span><br><span class="line">  <span class="string">"net/http"</span></span><br><span class="line">  <span class="string">"os"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  finalHandler := http.HandlerFunc(final)</span><br><span class="line"></span><br><span class="line">  logFile, err := os.OpenFile(<span class="string">"server.log"</span>, os.O_WRONLY|os.O_CREATE|os.O_APPEND, <span class="number">0666</span>)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(err)</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  http.Handle(<span class="string">"/"</span>, handlers.LoggingHandler(logFile, finalHandler))</span><br><span class="line">  http.ListenAndServe(<span class="string">":3000"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">final</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">  w.Write([]<span class="keyword">byte</span>(<span class="string">"OK"</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这种小例子中，我们的代码是非常清晰的。但是如果我们想将 LoggingHandler 用作更大的中间层链的一部分，会发生什么？我们可以很容易地得到一个看起来像这样的声明…</p>
+<p><code>http.Handle(&quot;/&quot;, handlers.LoggingHandler(logFile, authHandler(enforceXMLHandler(finalHandler))))</code></p>
+<p>… 那让我的头疼！</p>
+<p>一种已经知道的方法是通过创建一个构造函数（让我们称之为 myLoggingHandler）和签名 <code>func (http.Handler) http.Handler</code>。这将使我们能够与其他中间层更加简洁地嵌套在一起：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">myLoggingHandler</span><span class="params">(h http.Handler)</span> <span class="title">http</span>.<span class="title">Handler</span></span> &#123;</span><br><span class="line">  logFile, err := os.OpenFile(<span class="string">"server.log"</span>, os.O_WRONLY|os.O_CREATE|os.O_APPEND, <span class="number">0666</span>)</span><br><span class="line">  <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="built_in">panic</span>(err)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> handlers.LoggingHandler(logFile, h)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">  finalHandler := http.HandlerFunc(final)</span><br><span class="line"></span><br><span class="line">  http.Handle(<span class="string">"/"</span>, myLoggingHandler(finalHandler))</span><br><span class="line">  http.ListenAndServe(<span class="string">":3000"</span>, <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果你运行这个应用程序并发送一些请求，你的 server.log 文件应该是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat server.log</span><br><span class="line">127.0.0.1 - - [21&#x2F;Oct&#x2F;2014:18:56:43 +0100] &quot;GET &#x2F; HTTP&#x2F;1.1&quot; 200 2</span><br><span class="line">127.0.0.1 - - [21&#x2F;Oct&#x2F;2014:18:56:36 +0100] &quot;POST &#x2F; HTTP&#x2F;1.1&quot; 200 2</span><br><span class="line">127.0.0.1 - - [21&#x2F;Oct&#x2F;2014:18:56:43 +0100] &quot;PUT &#x2F; HTTP&#x2F;1.1&quot; 200 2</span><br></pre></td></tr></table></figure>
+
+<p>如果你有兴趣，可以参考这篇文章中的三个中间层处理程序。</p>
+<p>附注：请注意，Gorilla LoggingHandler 正在记录日志中的响应状态（<code>200</code>）和响应长度（<code>2</code>）。这很有趣。上游的日志记录中间层是如何知道我们的应用处理程序编写的响应的？</p>
+<p>它通过定义自己的 <code>responseLogger</code> 类来包装 <code>http.ResponseWriter</code>，并创建自定义的 <code>reponseLogger.Write()</code> 和 <code>reponseLogger.WriteHeader()</code> 方法。这些方法不仅可以编写响应，还可以存储大小和状态供以后检查。Gorilla 的 LoggingHandler 将 <code>reponseLogger</code> 传递给链中的下一个处理程序，而不是普通的 <code>http.ResponseWriter</code>。</p>
+<h2 id="附加工具（Additional-Tools）"><a href="#附加工具（Additional-Tools）" class="headerlink" title="附加工具（Additional Tools）"></a>附加工具（Additional Tools）</h2><p><a href="https://github.com/justinas/alice" target="_blank" rel="noopener">由 Justinas Stankevičius 编写的 Alice</a> 是一个非常聪明并且轻量级的包，它为连接中间层处理程序提供了一些语法糖。在最基础的方面，Alice 允许你重写这个：</p>
+<p><code>http.Handle(&quot;/&quot;, myLoggingHandler(authHandler(enforceXMLHandler(finalHandler))))</code></p>
+<p>为这个：</p>
+<p><code>http.Handle(&quot;/&quot;, alice.New(myLoggingHandler, authHandler, enforceXMLHandler).Then(finalHandler))</code></p>
+<p>至少在我看来，这些代码一眼就能看清楚这一点。但是，Alice 的真正好处是它可以让你指定一个处理程序链并将其重复用于多个路由。像这样：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">stdChain := alice.New(myLoggingHandler, authHandler, enforceXMLHandler)</span><br><span class="line"></span><br><span class="line">http.Handle(<span class="string">"/foo"</span>, stdChain.Then(fooHandler))</span><br><span class="line">http.Handle(<span class="string">"/bar"</span>, stdChain.Then(barHandler))</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>via: <a href="http://www.alexedwards.net/blog/making-and-using-middleware" target="_blank" rel="noopener">http://www.alexedwards.net/blog/making-and-using-middleware</a></p>
+<p>作者：<a href="https://katcipis.github.io/" target="_blank" rel="noopener">TIAGO KATCIPIS</a><br>译者：<a href="https://github.com/gogeof" target="_blank" rel="noopener">gogeof</a><br>校对：<a href="https://github.com/校对者ID" target="_blank" rel="noopener">校对者ID</a></p>
+<p>本文由 <a href="https://github.com/studygolang/GCTT" target="_blank" rel="noopener">GCTT</a> 原创编译，<a href="https://studygolang.com/" target="_blank" rel="noopener">Go 中文网</a> 荣誉推出</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%BF%BB%E8%AF%91%E6%96%87%E7%AB%A0/" rel="tag"># 翻译文章</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/04/15/%E3%80%90%E8%AF%91%E3%80%91Golang-%E6%95%B0%E6%8D%AE%E5%BA%93-mocks/" rel="next" title="【译】Golang 数据库 mocks">
+                <i class="fa fa-chevron-left"></i> 【译】Golang 数据库 mocks
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/27/%E3%80%90%E8%AF%91%E3%80%91Go-%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="prev" title="【译】Go 语言中的线程池">
+                【译】Go 语言中的线程池 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/header.jpg"
+                alt="Gogeof" />
+            
+              <p class="site-author-name" itemprop="name">Gogeof</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/gogeof" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="miancai.li@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本原则（The-Basic-Principles）"><span class="nav-number">1.</span> <span class="nav-text">基本原则（The Basic Principles）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#控制流程说明（Illustrating-the-Flow-of-Control）"><span class="nav-number">2.</span> <span class="nav-text">控制流程说明（Illustrating the Flow of Control）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通过一个合适的例子来了解如何？（Understood-How-About-a-Proper-Example-）"><span class="nav-number">3.</span> <span class="nav-text">通过一个合适的例子来了解如何？（Understood. How About a Proper Example?）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用第三方中间层（Using-Third-Party-Middleware）"><span class="nav-number">4.</span> <span class="nav-text">使用第三方中间层（Using Third-Party Middleware）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附加工具（Additional-Tools）"><span class="nav-number">5.</span> <span class="nav-text">附加工具（Additional Tools）</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2018 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Gogeof</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">41.8k</span>
+  
+</div>
+
+<!-- modify by me -->
+<!--
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+  <div class="footer-custom">Hosted by <a target="_blank" href="https://github.com/gogeof">GitHub Pages</a></div>
+
+-->
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
